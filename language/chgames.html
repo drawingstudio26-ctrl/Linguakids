@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#58CC02">
+<title>LinguaKids - 中文拼音 Games</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+  body { 
+    font-family: 'Arial', sans-serif; 
+    background: linear-gradient(135deg, #e0eaff 0%, #f6f0ff 100%); 
+    margin: 0; 
+    padding: 0; 
+    min-height: 100vh;
+  }
+  #app { 
+    max-width: 900px; 
+    margin: auto; 
+    padding: 15px; 
+  }
+  h2 { text-align: center; color: #58cc02; margin-bottom: 20px; }
+  .btn { 
+    background: linear-gradient(to right, #58cc02, #1cb0f6);
+    color: white; 
+    border: none; 
+    padding: 10px 20px; 
+    border-radius: 50px; 
+    cursor: pointer; 
+    margin: 5px; 
+    font-size: 1rem;
+    transition: transform 0.2s;
+  }
+  .btn:hover { transform: translateY(-2px); }
+  .btn:active { transform: scale(0.96); }
+  .lesson-controls { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-top: 15px; }
+  .game-container {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    margin: 20px 0;
+  }
+  .result {
+    margin-top: 15px;
+    padding: 10px;
+    border-radius: 8px;
+    text-align: center;
+    font-weight: bold;
+    font-size: 1.2rem;
+  }
+  .correct { background: #e8f5e9; color: #2e7d32; }
+  .incorrect { background: #ffebee; color: #c62828; }
+  .back-button {
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    z-index: 1000;
+  }
+  .back-button .btn { margin: 0; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+  .score-display { text-align: center; font-size: 1.2rem; margin: 10px 0; color: #1cb0f6; }
+  .game-title { text-align: center; color: #58cc02; margin-bottom: 20px; }
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="back-button">
+    <button class="btn" onclick="goBack()"><i class="fas fa-arrow-left"></i> 返回 Back</button>
+  </div>
+  <div id="game-content" style="margin-top:60px;"></div>
+</div>
+
+<script>
+/* === Games Data === */
+const yesNoWords = [
+  {emoji:"⛰️", char:"山", pinyin:"shān"},
+  {emoji:"💧", char:"水", pinyin:"shuǐ"},
+  {emoji:"🔥", char:"火", pinyin:"huǒ"},
+  {emoji:"🌊", char:"海", pinyin:"hǎi"},
+  {emoji:"💨", char:"风", pinyin:"fēng"},
+  {emoji:"☁️", char:"云", pinyin:"yún"},
+  {emoji:"🌳", char:"树", pinyin:"shù"},
+  {emoji:"🌸", char:"花", pinyin:"huā"},
+  {emoji:"🏞️", char:"河", pinyin:"hé"}
+];
+
+const chineseNumbers = [
+  {num:1, char:"一", pinyin:"yī"},
+  {num:2, char:"二", pinyin:"èr"},
+  {num:3, char:"三", pinyin:"sān"},
+  {num:4, char:"四", pinyin:"sì"},
+  {num:5, char:"五", pinyin:"wǔ"},
+  {num:6, char:"六", pinyin:"liù"},
+  {num:7, char:"七", pinyin:"qī"},
+  {num:8, char:"八", pinyin:"bā"},
+  {num:9, char:"九", pinyin:"jiǔ"},
+  {num:10, char:"十", pinyin:"shí"}
+];
+
+// Game state
+let gameState = { score:0, totalQuestions:0, currentRound:0, maxRounds:9 };
+
+/* === Navigation === */
+function goBack(){ window.location.href='chinese.html'; }
+
+/* === Yes or No Game === */
+function playYesNo(){
+  gameState.score=0; gameState.totalQuestions=0; gameState.currentRound=0;
+  nextYesNoRound();
+}
+
+function nextYesNoRound(){
+  gameState.currentRound++;
+  const gameDiv=document.getElementById("game-content");
+  const word = yesNoWords[Math.floor(Math.random() * yesNoWords.length)];
+  const showCorrect = Math.random() > 0.5;
+  
+  // Logic to select a random, different Hanzi if showCorrect is false
+  let displayChar;
+  if (showCorrect) {
+    displayChar = word.char;
+  } else {
+    // Selects a character different from the one matching the emoji
+    const wrongWords = yesNoWords.filter(w => w.char !== word.char);
+    displayChar = wrongWords[Math.floor(Math.random() * wrongWords.length)].char;
+  }
+
+  const displayPinyin = yesNoWords.find(w => w.char===displayChar).pinyin;
+  
+  gameDiv.innerHTML = `
+    <div class="game-container">
+      <h2 class="game-title"><br>Does the picture match the word?</h2>
+      <div class="score-display">Score: ${gameState.score} / ${gameState.totalQuestions}</div>
+      <p style="font-size:3rem;margin:20px 0;text-align:center;">${word.emoji}</p>
+      <p style="font-size:2rem;text-align:center;margin:10px 0;">${displayChar}</p>
+      <p style="color:#1cb0f6;font-size:1.2rem;text-align:center;">${displayPinyin}</p>
+      <div class="lesson-controls">
+        <button class="btn" onclick="answerYes('${displayChar}','${word.char}')">✅Yes</button>
+        <button class="btn" onclick="answerNo('${displayChar}','${word.char}')">❌No</button>
+      </div>
+      <div id="yesNoResult" class="result"></div>
+    </div>
+  `;
+  
+  if('speechSynthesis' in window){
+    const utter = new SpeechSynthesisUtterance(displayChar);
+    utter.lang="zh-CN"; utter.rate=0.8;
+    speechSynthesis.speak(utter);
+  }
+}
+
+function answerYes(selected, correct){
+  gameState.totalQuestions++;
+  const res=document.getElementById("yesNoResult");
+  if(selected===correct){ res.textContent="✅Correct!"; res.className="result correct"; gameState.score++; } 
+  else { res.textContent="❌Incorrect!"; res.className="result incorrect"; }
+  setTimeout(()=>{ gameState.currentRound<gameState.maxRounds ? nextYesNoRound() : showGameCompletion(); },1500);
+}
+
+function answerNo(selected, correct){
+  gameState.totalQuestions++;
+  const res=document.getElementById("yesNoResult");
+  if(selected!==correct){ res.textContent="✅Correct!"; res.className="result correct"; gameState.score++; } 
+  else { res.textContent="❌Incorrect!"; res.className="result incorrect"; }
+  setTimeout(()=>{ gameState.currentRound<gameState.maxRounds ? nextYesNoRound() : showGameCompletion(); },1500);
+}
+
+/* === Count the Apples Game === */
+function playCountApples(){
+  gameState.score=0; gameState.totalQuestions=0; gameState.currentRound=0;
+  nextCountRound();
+}
+
+function nextCountRound(){
+  gameState.currentRound++;
+  const gameDiv=document.getElementById("game-content");
+  const count=Math.floor(Math.random()*9)+1;
+  
+  let options=[count];
+  while(options.length<3){
+    const opt=Math.max(1, Math.min(10, count + Math.floor(Math.random()*5)-2));
+    if(!options.includes(opt)) options.push(opt);
+  }
+  options=options.sort(()=>Math.random()-0.5);
+  
+  gameDiv.innerHTML=`
+    <div class="game-container">
+      <h2 class="game-title"><br>Count the apples:</h2>
+      <div class="score-display">Score: ${gameState.score} / ${gameState.totalQuestions}</div>
+      <p style="font-size:3rem;margin:20px 0;text-align:center;line-height:1.5;">${'🍎'.repeat(count)}</p>
+      <div class="lesson-controls">
+        ${options.map(opt=>{
+          const ch=chineseNumbers.find(c=>c.num===opt);
+          return `<button class="btn" onclick="checkApples(${opt},${count})">${ch.char} (${ch.pinyin})</button>`;
+        }).join('')}
+      </div>
+      <div id="countResult" class="result"></div>
+    </div>
+  `;
+}
+
+function checkApples(selected, correct){
+  gameState.totalQuestions++;
+  const res=document.getElementById("countResult");
+  const chNum = chineseNumbers.find(c=>c.num===correct);
+  if(selected===correct){ 
+    res.textContent=`✅Correct! (${chNum.char} ${chNum.pinyin})`; 
+    res.className="result correct"; 
+    gameState.score++; 
+  } else { 
+    res.textContent=`❌Incorrect! 正确答案: ${chNum.char} (${chNum.pinyin})`; 
+    res.className="result incorrect"; 
+  }
+  setTimeout(()=>{ gameState.currentRound<gameState.maxRounds ? nextCountRound() : showGameCompletion(); },1500);
+}
+
+/* === Game Completion (FIXED PROGRESS TRACKING) === */
+function showGameCompletion(){
+  const percentage=Math.round((gameState.score/gameState.totalQuestions)*100);
+  let message="";
+  if(percentage>=90) message="Excellent! 🎉";
+  else if(percentage>=70) message="Good job! 👍";
+  else if(percentage>=50) message="Not bad! 😊";
+  else message="Keep practicing! 💪";
+  
+  const urlParams = new URLSearchParams(window.location.search);
+  const selectedGame = urlParams.get('game');
+  
+  // FIX: Use the global updateProgress function with a session lock
+  if (typeof updateProgress === 'function') {
+    // Check if we already registered completion for this game today
+    const gameKey = `${selectedGame}_day_${new Date().toDateString()}`;
+    if (!sessionStorage.getItem(gameKey)) {
+        // Award 1 unit of progress (which counts as 1 game played)
+        updateProgress('games', selectedGame, 1);
+        sessionStorage.setItem(gameKey, 'true');
+    }
+  }
+
+  document.getElementById("game-content").innerHTML=`
+    <div class="game-container" style="text-align:center;">
+      <h2 class="game-title"><br>Game Complete!</h2>
+      <div style="font-size:4rem;margin:20px 0;">${percentage>=70 ? '🎉' : '👍'}</div>
+      <p style="font-size:1.5rem;color:#58cc02;">${message}</p>
+      <p style="font-size:1.2rem;">Final Score: ${gameState.score} / ${gameState.totalQuestions} (${percentage}%)</p>
+      <div class="lesson-controls">
+        <button class="btn" onclick="location.reload()"><i class="fas fa-redo"></i>Play Again</button>
+        <button class="btn" onclick="goBack()"><i class="fas fa-home"></i>Back to Home</button>
+      </div>
+    </div>
+  `;
+}
+
+// THIS FUNCTION IS NO LONGER NEEDED AS WE ARE INCLUDING chprogress.js
+/*
+function ensureProgressSystem() {
+  // ...
+}
+*/
+
+/* === Load selected game immediately === */
+document.addEventListener('DOMContentLoaded', () => {
+  // We no longer need the ensureProgressSystem() fallback
+  
+  const urlParams = new URLSearchParams(window.location.search);
+  const selectedGame = urlParams.get('game');
+  
+  // Ensure global functions are available by calling init
+  if (typeof initChineseProgress === 'function') {
+    initChineseProgress();
+  }
+
+  if(selectedGame==='yes-no') playYesNo();
+  else if(selectedGame==='count-apples') playCountApples();
+  else document.getElementById("game-content").innerHTML='<p style="text-align:center;">Game not selected or invalid parameter.</p>';
+});
+</script>
+<script src="chprogress.js"></script>
+
+<script src="script.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="mr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#58CC02">
+  <title>LinguaKids - Marathi Level 2</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700&family=Quicksand:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    body, html { 
+      margin: 0; 
+      padding: 0; 
+      font-family: 'Quicksand', sans-serif; 
+      background:#f6f8ff; 
+      overflow-x: hidden;
+    }
+
+    h2 { 
+      text-align:center; 
+      color:#58cc02; 
+      font-family:'Baloo 2', cursive; 
+    }
+
+    .item-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 20px;
+      margin: 20px auto;
+      padding: 0 15px;
+      max-width: 1200px;
+      box-sizing: border-box;
+    }
+
+    .item-card {
+      background: white;
+      padding: 15px;
+      border-radius: 12px;
+      text-align: center;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    
+    .item-card:hover {
+        transform: translateY(-4px);
+    }
+
+    .item-card div { margin: 5px 0; }
+
+    .speak-btn {
+      background: linear-gradient(to right,#58cc02,#1cb0f6);
+      border: none; 
+      color: white; 
+      padding: 6px 12px;
+      border-radius: 50px; 
+      cursor: pointer;
+      font-size: 0.9rem; 
+      font-family: 'Baloo 2', cursive;
+    }
+    .speak-btn:hover { opacity: 0.9; }
+
+    .btn {
+      background: linear-gradient(to right,#58cc02,#1cb0f6);
+      border: none; 
+      color: white; 
+      padding: 8px 20px; 
+      border-radius: 50px;
+      font-family: 'Baloo 2', cursive; 
+      cursor: pointer; 
+      margin: 10px 5px;
+    }
+    .btn:active { transform: scale(0.96); }
+
+    @media (max-width: 600px) {
+      .item-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+  </style>
+</head>
+<body>
+  <button onclick="goBack()" class="btn">Back</button>
+  <h2 id="categoryTitle"></h2>
+  <div id="content" class="item-grid"></div>
+
+<script>
+// ===== PAGE-SPECIFIC DATA AND FUNCTIONS =====
+
+const DATA = {
+  fruits: [
+    {name: "सफरचंद", english: "Apple", icon: "🍎"}, {name: "केळी", english: "Banana", icon: "🍌"}, {name: "संत्री", english: "Orange", icon: "🍊"}, {name: "आंबा", english: "Mango", icon: "🥭"}, {name: "द्राक्षे", english: "Grapes", icon: "🍇"}, {name: "अननस", english: "Pineapple", icon: "🍍"}, {name: "स्ट्रॉबेरी", english: "Strawberry", icon: "🍓"}, {name: "कलिंगड", english: "Watermelon", icon: "🍉"}, {name: "चेरी", english: "Cherry", icon: "🍒"}, {name: "पीच", english: "Peach", icon: "🍑"}, {name: "लिंबू", english: "Lemon", icon: "🍋"},
+{name: "नासपती", english: "Pear", icon: "🍐"},
+{name: "कीवी", english: "Kiwi", icon: "🥝"},
+{name: "डाळिंब", english: "Pomegranate", icon: "🍎"}, 
+{name: "नारळ", english: "Coconut", icon: "🥥"},
+{name: "पेरू", english: "Guava", icon: "🍐"}, 
+{name: "टरबूज", english: "Melon", icon: "🍈"}
+
+  ],
+  vegetables: [
+    {name: "गाजर", english: "Carrot", icon: "🥕"}, {name: "बटाटा", english: "Potato", icon: "🥔"}, {name: "टोमॅटो", english: "Tomato", icon: "🍅"}, {name: "कोबी", english: "Cabbage", icon: "🥬"}, {name: "मका", english: "Corn", icon: "🌽"}, {name: "कांदा", english: "Onion", icon: "🧅"}, {name: "लसूण", english: "Garlic", icon: "🧄"}, {name: "ब्रोकोली", english: "Broccoli", icon: "🥦"}, {name: "काकडी", english: "Cucumber", icon: "🥒"}, {name: "मिरची", english: "Chilli", icon: "🌶️"}, 
+{name: "भोपळा", english: "Pumpkin", icon: "🎃"},
+{name: "वांगी", english: "Brinjal", icon: "🍆"},
+{name: "पालक", english: "Spinach", icon: "🥬"},
+{ name: "मेथी", english: "Fenugreek", icon: "🌿" },
+{name: "कोंथिंबीर", english: "Coriander", icon: "🌱"},
+
+  ],
+  animals: [
+    {name: "सिंह", english: "Lion", icon: "🦁"}, {name: "वाघ", english: "Tiger", icon: "🐯"}, {name: "हत्ती", english: "Elephant", icon: "🐘"}, {name: "कुत्रा", english: "Dog", icon: "🐶"}, {name: "मांजर", english: "Cat", icon: "🐱"}, {name: "घोडा", english: "Horse", icon: "🐴"}, {name: "माकड", english: "Monkey", icon: "🐵"}, {name: "गाय", english: "Cow", icon: "🐄"}, {name: "ससा", english: "Rabbit", icon: "🐇"}, {name: "मेंढी", english: "Sheep", icon: "🐑"}, {name: "अस्वल", english: "Bear", icon: "🐻"},
+{name: "कोल्हा", english: "Fox", icon: "🦊"},
+{name: "पांडा", english: "Panda", icon: "🐼"},
+{name: "डुक्कर", english: "Pig", icon: "🐷"},
+{name: "उंट", english: "Camel", icon: "🐪"},
+{name: "मेंढा", english: "Ram", icon: "🐏"},
+{name: "कांगारू", english: "Kangaroo", icon: "🦘"},
+{name: "साप", english: "Snake", icon: "🐍"},
+{name: "मगरी", english: "Crocodile", icon: "🐊"},
+{name: "ससा", english: "Hare", icon: "🐇"}
+
+  ],
+  birds: [
+    {name: "पोपट", english: "Parrot", icon: "🦜"}, {name: "कावळा", english: "Crow", icon: "🐦"}, {name: "मोर", english: "Peacock", icon: "🦚"}, {name: "चिमणी", english: "Sparrow", icon: "🐤"}, {name: "घुबड", english: "Owl", icon: "🦉"}, {name: "बदक", english: "Duck", icon: "🦆"}, {name: "हंस", english: "Swan", icon: "🦢"}, {name: "कबूतर", english: "Pigeon", icon: "🕊️"}, {name: "गरुड", english: "Eagle", icon: "🦅"}, {name: "फ्लेमिंगो", english: "Flamingo", icon: "🦩"}, 
+{name: "टर्की", english: "Turkey", icon: "🦃"},
+{name: "कोंबडा", english: "Rooster", icon: "🐓" },
+{name: "कोंबडी", english: "Hen", icon: "🐔"},
+{name: "गिधाड", english: "Vulture", icon: "🦅"},
+{name: "पेंग्विन", english: "Penguin", icon: "🐧"},
+{name: "हम्मिंगबर्ड", english: "Hummingbird", icon: "🕊️"},
+{name: "सीगल", english: "Seagull", icon: "🕊️"}
+
+  ],
+  vehicles: [
+    {name: "कार", english: "Car", icon: "🚗"}, {name: "बस", english: "Bus", icon: "🚌"}, {name: "ट्रक", english: "Truck", icon: "🚚"}, {name: "आगगाडी", english: "Train", icon: "🚆"}, {name: "विमान", english: "Airplane", icon: "✈️"}, {name: "सायकल", english: "Bicycle", icon: "🚲"}, {name: "मोटारसायकल", english: "Motorcycle", icon: "🏍️"}, {name: "नाव", english: "Boat", icon: "⛵"}, {name: "हेलिकॉप्टर", english: "Helicopter", icon: "🚁"}, {name: "ट्रॅक्टर", english: "Tractor", icon: "🚜"}, {name: "रिक्षा", english: "Rickshaw", icon: "🛺"},
+{name: "मेट्रो", english: "Metro Train", icon: "🚇"},
+{name: "स्कूटर", english: "Scooter", icon: "🛵"},
+{name: "जहाज", english: "Ship", icon: "🚢"},
+{name: "अंतराळयान", english: "Spaceship", icon: "🚀"},
+{name: "फायर ट्रक", english: "Fire Truck", icon: "🚒"},
+{name: "ॲम्ब्युलन्स", english: "Ambulance", icon: "🚑"},
+{name: "पोलीस कार", english: "Police Car", icon: "🚓"},
+{name: "सबवे", english: "Subway", icon: "🚉"}
+  ],
+  colors: [
+    {name: "लाल", english: "Red", icon: "🔴"}, {name: "निळा", english: "Blue", icon: "🔵"}, {name: "हिरवा", english: "Green", icon: "🟢"}, {name: "पिवळा", english: "Yellow", icon: "🟡"}, {name: "नारिंगी", english: "Orange", icon: "🟠"}, {name: "जांभळा", english: "Purple", icon: "🟣"}, {name: "गुलाबी", english: "Pink", icon: "🌸"}, {name: "तपकिरी", english: "Brown", icon: "🟤"}, {name: "काळा", english: "Black", icon: "⚫"}, {name: "पांढरा", english: "White", icon: "⚪"}
+  ]
+};
+
+const CATEGORY_NAMES = {
+  fruits: "फळे (Fruits)",
+  vegetables: "भाज्या (Vegetables)",
+  animals: "प्राणी (Animals)",
+  birds: "पक्षी (Birds)",
+  vehicles: "वाहने (Vehicles)",
+  colors: "रंग (Colors)"
+};
+
+const urlParams = new URLSearchParams(window.location.search);
+const category = urlParams.get('category');
+
+/**
+ * Tracks progress for a specific word by calling the global update function.
+ * @param {string} category - The category of the word (e.g., 'fruits').
+ * @param {number} index - The unique index of the item within its category.
+ */
+function trackWordProgress(category, index) {
+  if (typeof updateMarathiProgress === 'function') {
+    // Pass the index as the unique itemId for accurate tracking in mrprogress.js
+    updateMarathiProgress('level2', category, index);
+  }
+}
+
+function speakText(text) {
+  if ('speechSynthesis' in window) {
+    window.speechSynthesis.cancel(); // Prevent overlapping speech
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'mr-IN';
+    utterance.rate = 0.8;
+    speechSynthesis.speak(utterance);
+  } else {
+    alert('Speech synthesis not supported in this browser.');
+  }
+}
+
+function goBack() {
+  window.location.href = 'marathi.html';
+}
+
+// ===== INITIALIZATION =====
+
+// Main logic to build the page content
+if (category && DATA[category]) {
+  document.getElementById('categoryTitle').textContent = CATEGORY_NAMES[category];
+  
+  // CORRECTED: Pass the 'index' to track each item individually
+  document.getElementById('content').innerHTML = DATA[category].map((item, index) => `
+  <div class="item-card" onclick="trackWordProgress('${category}', ${index})">
+    <div style="font-size: 2rem;">${item.icon}</div>
+    <div style="font-size: 1.5rem; font-weight: bold;">${item.name}</div>
+    <div style="color: #666;">${item.english}</div>
+    <button class="speak-btn" onclick="event.stopPropagation(); speakText('${item.name}'); trackWordProgress('${category}', ${index});">
+      <i class="fas fa-volume-up"></i>
+    </button>
+  </div>
+`).join('');
+} else {
+  document.getElementById('content').innerHTML = '<p>Category not found.</p>';
+}
+
+// Initialize the progress system when the page loads
+document.addEventListener('DOMContentLoaded', function() {
+  if (typeof initMarathiProgress === 'function') {
+    initMarathiProgress();
+  }
+});
+</script>
+
+<script src="mrprogress.js"></script>
+<script src="script.js"></script>
+
+</body>
+</html>

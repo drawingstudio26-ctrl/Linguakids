@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#58CC02">
+  <title>LinguaKids - German</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700&family=Quicksand:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    /* [CSS remains the same] */
+    body {
+      font-family: 'Quicksand', Arial, sans-serif;
+      background: linear-gradient(135deg,#e0eaff 0%,#f6f0ff 100%);
+      margin: 0;
+      padding: 0;
+      position: relative;
+      min-height: 100vh;
+    }
+    
+    #app { 
+      max-width: 1000px; 
+      margin: auto; 
+      padding: 15px; 
+      position: relative;
+    }
+    
+    h2 { 
+      text-align: center; 
+      color: #58cc02; 
+      font-family: 'Baloo 2', cursive; 
+    }
+    
+    .sub-container, .letters-grid, .numbers-grid {
+      display: grid; 
+      grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+      gap: 15px; 
+      margin-top: 20px;
+    }
+    
+    .sub-card, .letter-card, .number-card {
+      background: white; 
+      padding: 15px; 
+      border-radius: 12px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.05); 
+      text-align: center;
+      cursor: pointer; 
+      transition: 0.3s;
+    }
+    
+    .sub-card:hover, .letter-card:hover, .number-card:hover {
+      transform: translateY(-5px); 
+      box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+    }
+    
+    .main-char { 
+      font-size: 2rem; 
+      font-weight: bold; 
+      color: #58cc02; 
+    }
+    
+    .small-char { 
+      font-size: 1.2rem; 
+      color: #1cb0f6; 
+    }
+    
+    .example { 
+      margin-top: 5px; 
+      font-size: 1rem; 
+    }
+    
+    .balls { 
+      font-size: 1.5rem; 
+      margin-top: 10px; 
+      word-wrap: break-word; 
+    }
+    
+    .btn {
+      background: linear-gradient(to right, #58cc02, #1cb0f6);
+      border: none; 
+      color: white; 
+      padding: 8px 20px; 
+      border-radius: 50px;
+      font-family: 'Baloo 2', cursive; 
+      cursor: pointer; 
+      margin: 10px 5px;
+      display: inline-block;
+    }
+    
+    .btn:active { 
+      transform: scale(0.96); 
+    }
+    
+    .lesson-controls {
+      display: flex; 
+      justify-content: center; 
+      gap: 10px; 
+      margin-top: 15px;
+      flex-wrap: wrap;
+    }
+    
+    canvas {
+      border: 2px solid #ccc; 
+      border-radius: 12px; 
+      background: #fff;
+      display: block; 
+      margin: 15px auto;
+    }
+    
+    @media (max-width: 600px) {
+      .main-char { font-size: 1.5rem; } 
+      .small-char { font-size: 1rem; }
+      .example { font-size: 0.9rem; }
+    }
+    
+    .lesson-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      margin-top: 20px;
+    }
+    
+    .lesson-container .main-char {
+      font-size: 3rem;
+    }
+    
+    .lesson-container .example {
+      font-size: 1.3rem;
+      margin: 10px 0;
+    }
+    
+    .trace-area {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 10px 0;
+    }
+
+    .clear-btn {
+      background: #ff6b6b;  /* red tone for erase */
+      padding: 5px 15px;
+      font-size: 0.9rem;
+      border-radius: 8px;
+      margin-top: 8px;
+    }
+    
+    .clear-btn:hover {
+      background: #ff5252;
+    }
+    
+    .sub-card {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+      text-align: center;
+      cursor: pointer;
+      transition: 0.3s;
+      word-wrap: break-word;      /* allow wrapping */
+      overflow-wrap: break-word;  /* modern browsers */
+      white-space: normal;        /* prevents text from going outside */
+    }
+
+    .sub-card h3 {
+      font-size: 1.1rem;   /* smaller title for mobile */
+      margin: 5px 0;
+    }
+
+    .sub-card p {
+      font-size: 0.9rem;   /* keep description compact */
+      margin: 0;
+      line-height: 1.2;
+    }
+    
+    @media (max-width: 600px) {
+      .sub-container {
+        grid-template-columns: repeat(2, 1fr);  /* 2 boxes per row on mobile */
+      }
+      .sub-card {
+        padding: 15px;
+      }
+      .sub-card h3 { font-size: 1rem; }
+      .sub-card p { font-size: 0.8rem; }
+    }
+
+    /* Toast styles */
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #58cc02;
+      color: white;
+      padding: 15px 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transform: translateY(100px);
+      opacity: 0;
+      transition: transform 0.3s, opacity 0.3s;
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    /* Fixed Back button positioning - TOP LEFT OF SCREEN */
+    .back-button-container {
+      position: fixed;
+      top: 15px;
+      left: 15px;
+      z-index: 1000; /* Higher z-index to ensure it's above everything */
+    }
+
+    .back-button-container .btn {
+      margin: 0;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      background: linear-gradient(to right, #58cc02, #1cb0f6);
+      border: none;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 50px;
+      font-family: 'Baloo 2', cursive;
+      cursor: pointer;
+      display: inline-block !important; /* Force display */
+      position: relative;
+      z-index: 1001;
+    }
+
+    /* Main content area - push down to avoid overlap with fixed back button */
+    #learning-content {
+      padding-top: 60px; /* Increased padding to ensure content is below button */
+      position: relative;
+      z-index: 1;
+    }
+
+    @media (max-width: 600px) {
+      .back-button-container {
+        top: 10px;
+        left: 10px;
+      }
+      
+      .back-button-container .btn {
+        padding: 8px 16px;
+        font-size: 0.9rem;
+      }
+      
+      #learning-content {
+        padding-top: 50px;
+      }
+    }
+
+    /* Ensure no other elements can overlap the back button */
+    * {
+      box-sizing: border-box;
+    }
+
+    /* NEW: Style for section header buttons to be aligned left */
+    .section-header {
+      display: flex;
+      justify-content: flex-start; /* Changed from center to flex-start */
+      margin-bottom: 20px;
+      padding-left: 10px; /* Add some padding for better alignment */
+    }
+
+    /* Sound button styles */
+    .sound-btn {
+      background: #ff9f43;
+      border: none;
+      color: white;
+      padding: 8px 15px;
+      border-radius: 50px;
+      cursor: pointer;
+      margin: 5px;
+      font-size: 0.9rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .sound-btn:hover {
+      background: #ff7f00;
+    }
+
+    .sound-btn:active {
+      transform: scale(0.96);
+    }
+  </style>
+</head>
+<body>
+<div id="app">
+  <div class="back-button-container">
+    <button id="globalBack" class="btn" onclick="goBack()">Back</button>
+  </div>
+  <div id="learning-content"></div>
+</div>
+
+<div id="achievementToast" class="toast">
+  <i class="fas fa-trophy"></i>
+  <div>
+    <div id="toastTitle">Erfolg freigeschaltet! (Achievement Unlocked!)</div>
+    <div id="toastDesc">Du hast eine neue Auszeichnung erhalten. (You've earned a new badge.)</div>
+  </div>
+</div>
+
+<script>
+/* === German Data (letters, numbers, words, sentences) === */
+const LETTERS = [
+  {upper:"A", lower:"a", word:"Apfel 🍎 (Apple)"},
+  {upper:"B", lower:"b", word:"Ball ⚽ (Ball)"},
+  {upper:"C", lower:"c", word:"Clown 🤡 (Clown)"},
+  {upper:"D", lower:"d", word:"Delfin 🐬 (Dolphin)"},
+  {upper:"E", lower:"e", word:"Elefant 🐘 (Elephant)"},
+  {upper:"F", lower:"f", word:"Fisch 🐟 (Fish)"},
+  {upper:"G", lower:"g", word:"Giraffe 🦒 (Giraffe)"},
+  {upper:"H", lower:"h", word:"Haus 🏠 (House)"},
+  {upper:"I", lower:"i", word:"Igel 🦔 (Hedgehog)"},
+  {upper:"J", lower:"j", word:"Jaguar 🐆 (Jaguar)"},
+  {upper:"K", lower:"k", word:"Katze 🐱 (Cat)"},
+  {upper:"L", lower:"l", word:"Löwe 🦁 (Lion)"},
+  {upper:"M", lower:"m", word:"Mond 🌙 (Moon)"},
+  {upper:"N", lower:"n", word:"Nase 👃 (Nose)"},
+  {upper:"O", lower:"o", word:"Orange 🍊 (Orange)"},
+  {upper:"P", lower:"p", word:"Pferd 🐴 (Horse)"},
+  {upper:"Q", lower:"q", word:"Qualle 🪼 (Jellyfish)"},
+  {upper:"R", lower:"r", word:"Regen 🌧️ (Rain)"},
+  {upper:"S", lower:"s", word:"Sonne ☀️ (Sun)"},
+  {upper:"T", lower:"t", word:"Tiger 🐯 (Tiger)"},
+  {upper:"U", lower:"u", word:"Uhr ⏰ (Clock)"},
+  {upper:"V", lower:"v", word:"Vogel 🐦 (Bird)"},
+  {upper:"W", lower:"w", word:"Wasser 💧 (Water)"},
+  {upper:"X", lower:"x", word:"Xylophon 🎶 (Xylophone)"},
+  {upper:"Y", lower:"y", word:"Yacht ⛵ (Yacht)"},
+  {upper:"Z", lower:"z", word:"Zebra 🦓 (Zebra)"},
+  {upper:"Ä", lower:"ä", word:"Äpfel 🍏 (Apples)"},
+  {upper:"Ö", lower:"ö", word:"Öl 🛢️ (Oil)"},
+  {upper:"Ü", lower:"ü", word:"Überraschung 🎁 (Surprise)"},
+  {upper:"ß", lower:"ß", word:"Straße 🛣️ (Street)"}
+];
+
+
+function numberToWords(num) {
+  const ones = ["","Eins (One)","Zwei (Two)","Drei (Three)","Vier (Four)","Fünf (Five)","Sechs (Six)","Sieben (Seven)","Acht (Eight)","Neun (Nine)",
+                "Zehn (Ten)","Elf (Eleven)","Zwölf (Twelve)","Dreizehn (Thirteen)","Vierzehn (Fourteen)","Fünfzehn (Fifteen)","Sechzehn (Sixteen)",
+                "Siebzehn (Seventeen)","Achtzehn (Eighteen)","Neunzehn (Nineteen)"];
+  const tens = ["","","Zwanzig (Twenty)","Dreißig (Thirty)","Vierzig (Forty)","Fünfzig (Fifty)","Sechzig (Sixty)","Siebzig (Seventy)","Achtzig (Eighty)","Neunzig (Ninety)"];
+
+  if (num < 20) return ones[num];
+  if (num < 100) {
+    return tens[Math.floor(num/10)] + (num%10 ? "-" + ones[num%10] : "");
+  }
+  if (num === 100) return "Einhundert (One Hundred)";
+}
+
+const NUMBERS = Array.from({length:100}, (_,i) => {
+  let digit = i+1;
+  return { digit, word: numberToWords(digit) };
+});
+
+// Track current view state
+let currentView = 'level1';
+
+// Audio context for sound playback
+let audioContext = null;
+
+/* === Init === */
+document.addEventListener('DOMContentLoaded', loadLevel1); // FIX: Move loadLevel1 here for stable initialization
+
+/* === Navigation Functions === */
+function goBack() {
+  switch(currentView) {
+    case 'alphabets-menu':
+    case 'numbers-menu':
+    case 'level2':
+    case 'level3':
+    case 'games':
+      loadLevel1();
+      break;
+    case 'alphabet-lesson':
+      loadAlphabetsMenu();
+      break;
+    case 'number-lesson':
+      loadNumbersMenu();
+      break;
+    case 'level1': // Added this case
+    default:
+      // Redirect to welcome.html when at the main level
+      window.location.href = 'welcome.html';
+  }
+}
+
+/* Show sub-menu: Alphabets & Numbers */
+function loadLevel1(){
+  currentView = 'level1';
+  toggleGlobalBack(false); // Hide back button on main level
+  document.getElementById("learning-content").innerHTML = `
+<h2>Progress Tracking</h2>
+<div class="sub-container">
+  <div class="sub-card" onclick="window.location.href='grprogress.html'">
+    <h3>My Progress in German</h3><p>Track your learning journey!</p>
+  </div>
+</div>
+
+    <h2>Level 1: Alphabets & Numbers</h2>
+    <div class="sub-container">
+      <div class="sub-card" onclick="loadAlphabetsMenu()">
+        <h3>Alphabet (Alphabets)</h3><p>Learn A–Z with tracing & sounds</p>
+      </div>
+      <div class="sub-card" onclick="loadNumbersMenu()">
+        <h3>Zahlen (Numbers)</h3><p>Learn 1–100 with objects & tracing</p>
+      </div>
+    </div>
+
+    <h2>Level 2: Basic Words</h2>
+<div class="sub-container">
+  <div class="sub-card" onclick="goToLevel2('fruits')">
+    <h3>Früchte (Fruits)</h3><p>Learn names of fruits</p>
+  </div>
+  <div class="sub-card" onclick="goToLevel2('vegetables')">
+    <h3>Gemüse (Vegetables)</h3><p>Learn names of vegetables</p>
+  </div>
+  <div class="sub-card" onclick="goToLevel2('animals')">
+    <h3>Tiere (Animals)</h3><p>Learn about animals</p>
+  </div>
+  <div class="sub-card" onclick="goToLevel2('birds')">
+    <h3>Vögel (Birds)</h3><p>Learn about birds</p>
+  </div>
+  <div class="sub-card" onclick="goToLevel2('vehicles')">
+    <h3>Fahrzeuge (Vehicles)</h3><p>Learn about vehicles</p>
+  </div>
+  <div class="sub-card" onclick="goToLevel2('colors')">
+    <h3>Farben (Colors)</h3><p>Learn different colors</p>
+  </div>
+</div>
+
+<h2>Level 3: Sentences & Expressions</h2>
+<div class="sub-container">
+  <div class="sub-card" onclick="goToLevel3('greetings')">
+    <h3>Simple Greetings</h3><p>Hallo, Guten Morgen... </p>
+  </div>
+  <div class="sub-card" onclick="goToLevel3('activities')">
+    <h3>Daily Activities</h3><p>Ich esse, ich spiele, ich schlafe... </p>
+  </div>
+  <div class="sub-card" onclick="goToLevel3('questions')">
+    <h3>Simple Q&A</h3><p>Wie heißt du?, Wie geht es dir? </p>
+  </div>
+</div>
+
+<h2>Games</h2>
+    <div class="sub-container">
+      <div class="sub-card" onclick="playGame('fill-blanks')">
+        <h3>Fill in the blanks</h3><p>Practice by completing missing words</p>
+      </div>
+      <div class="sub-card" onclick="playGame('match-words')">
+        <h3>Match words</h3><p>Match words with images</p>
+      </div>
+      <div class="sub-card" onclick="playGame('count-apples')">
+        <h3>Count the apples</h3><p>Count and learn numbers</p>
+      </div>
+    </div>
+  `;
+}
+
+/* === Alphabets === */
+function loadAlphabetsMenu(){
+  currentView = 'alphabets-menu';
+  toggleGlobalBack(true);
+  document.getElementById("learning-content").innerHTML = `
+    <div class="section-header">
+      <button class="btn" onclick="startAlphabetLesson(0)">Learn Alphabets</button>
+    </div>
+    <div class="letters-grid">
+      ${LETTERS.map(l=>`
+        <div class="letter-card" onclick="startAlphabetLesson(${LETTERS.indexOf(l)})">
+          <div class="main-char">${l.upper}</div>
+          <div class="small-char">${l.lower}</div>
+          <div class="example">${l.word}</div>
+        </div>`).join("")}
+    </div>
+  `;
+}
+
+function startAlphabetLesson(index){
+  currentView = 'alphabet-lesson';
+  toggleGlobalBack(true);
+  
+  if(index < 0){ index = 0; }
+  if(index >= LETTERS.length){ loadAlphabetsMenu(); return; }
+  const l = LETTERS[index];
+
+  // Track progress for alphabet learning
+  if (typeof updateProgress === 'function') {
+    updateProgress('level1', 'alphabets', 0.1);
+  } else {
+    console.log("Progress tracked: alphabet " + l.upper);
+  }
+
+  document.getElementById("learning-content").innerHTML = `
+    <div class="lesson-container">
+      <div class="main-char">${l.upper} <span class="small-char">${l.lower}</span></div>
+      <div class="example">${l.word}</div>
+      <button class="sound-btn" onclick="playAlphabetSound('${l.upper}')">
+        <i class="fas fa-volume-up"></i>Hear Letter
+      </button>
+      <button class="sound-btn" onclick="playWordSound('${l.word}')">
+        <i class="fas fa-volume-up"></i>Hear Word
+      </button>
+      <div class="trace-area">
+        <canvas id="traceCanvas" width="250" height="250"></canvas>
+        <button class="btn clear-btn" onclick="clearCanvas()">Clear</button>
+      </div>
+      <div class="lesson-controls">
+        <button class="btn" onclick="startAlphabetLesson(${index-1})">Previous</button>
+        <button class="btn" onclick="startAlphabetLesson(${index+1})">Next</button>
+      </div>
+    </div>
+  `;
+  initCanvas();
+}
+
+/* === Numbers === */
+function loadNumbersMenu(){
+  currentView = 'numbers-menu';
+  toggleGlobalBack(true);
+
+  document.getElementById("learning-content").innerHTML=`
+    <div class="section-header">
+      <button class="btn" onclick="startNumberLesson(0)">Learn Numbers</button>
+    </div>
+    <div class="numbers-grid">
+      ${NUMBERS.map(n=>`
+        <div class="number-card" onclick="startNumberLesson(${NUMBERS.indexOf(n)})">
+          <div class="main-char">${n.digit}</div>
+        </div>`).join("")}
+    </div>
+  `;
+}
+
+function startNumberLesson(index){
+  currentView = 'number-lesson';
+  toggleGlobalBack(true);
+
+  if(index < 0){ index = 0; }
+  if(index >= NUMBERS.length){ loadNumbersMenu(); return; }
+  const n = NUMBERS[index];
+
+  // Track progress for number learning
+  if (typeof updateProgress === 'function') {
+    updateProgress('level1', 'numbers', 0.1);
+  } else {
+    console.log("Progress tracked: number " + n.digit);
+  }
+  
+  document.getElementById("learning-content").innerHTML = `
+    <div class="lesson-container">
+      <div class="main-char">${n.digit}</div>
+      <div class="example">${n.word}</div>
+      <button class="sound-btn" onclick="playNumberSound(${n.digit})">
+        <i class="fas fa-volume-up"></i>Hear Number
+      </button>
+      <div class="trace-area">
+        <canvas id="traceCanvas" width="250" height="250"></canvas>
+        <button class="btn clear-btn" onclick="clearCanvas()">Clear</button>
+      </div>
+      <div class="lesson-controls">
+        <button class="btn" onclick="startNumberLesson(${index-1})">Previous</button>
+        <button class="btn" onclick="startNumberLesson(${index+1})">Next</button>
+      </div>
+    </div>
+  `;
+  
+  initCanvas();
+}
+
+/* === Sound Functions === */
+function playAlphabetSound(letter) {
+  // Create a simple text-to-speech function for letter pronunciation
+  if ('speechSynthesis' in window) {
+    const utterance = new SpeechSynthesisUtterance(letter);
+    utterance.lang = 'de-DE'; // Set language to German
+    utterance.rate = 0.8;
+    utterance.pitch = 1.2;
+    speechSynthesis.speak(utterance);
+  } else {
+    alert("Your browser doesn't support text-to-speech. Please try a modern browser like Chrome or Edge.");
+  }
+}
+
+function playWordSound(word) {
+  // FIX: Extract the German word only (remove English translation in parentheses and emojis)
+  // This removes the content inside parentheses and any emojis/special characters.
+  const cleanWord = word.replace(/\s*\(.*\)/g, '').replace(/[\u2700-\u27BF\uE000-\uF8FF\u2000-\u206F]/g, '').trim();
+  
+  if ('speechSynthesis' in window) {
+    const utterance = new SpeechSynthesisUtterance(cleanWord);
+    utterance.lang = 'de-DE'; // Set language to German
+    utterance.rate = 0.8;
+    utterance.pitch = 1.1;
+    speechSynthesis.speak(utterance);
+  } else {
+    alert("Your browser doesn't support text-to-speech. Please try a modern browser like Chrome or Edge.");
+  }
+}
+
+function playNumberSound(number) {
+  // FIX: Extract the German word only (remove English translation in parentheses)
+  const numberText = numberToWords(number).replace(/\s*\(.*\)/g, '').trim();
+  
+  if ('speechSynthesis' in window) {
+    const utterance = new SpeechSynthesisUtterance(numberText);
+    utterance.lang = 'de-DE'; // Set language to German
+    utterance.rate = 0.8;
+    utterance.pitch = 1.1;
+    speechSynthesis.speak(utterance);
+  } else {
+    alert("Your browser doesn't support text-to-speech. Please try a modern browser like Chrome or Edge.");
+  }
+}
+
+/* === Tracing Canvas === */
+function initCanvas(){
+  const canvas=document.getElementById("traceCanvas");
+  const ctx=canvas.getContext("2d");
+  ctx.lineWidth=4; ctx.lineCap="round"; ctx.strokeStyle="#58cc02";
+  let drawing=false;
+  function getPos(e){
+    const rect=canvas.getBoundingClientRect();
+    return {x:(e.clientX||e.touches[0].clientX)-rect.left,y:(e.clientY||e.touches[0].clientY)-rect.top};
+  }
+  canvas.onmousedown=()=>drawing=true;
+  canvas.onmouseup=()=>{drawing=false;ctx.beginPath();};
+  canvas.onmousemove=e=>{if(!drawing)return; const p=getPos(e); ctx.lineTo(p.x,p.y); ctx.stroke(); ctx.beginPath(); ctx.moveTo(p.x,p.y);}
+  canvas.ontouchstart=()=>drawing=true;
+  canvas.ontouchend=()=>{drawing=false;ctx.beginPath();};
+  canvas.ontouchmove=e=>{e.preventDefault(); if(!drawing)return; const p=getPos(e); ctx.lineTo(p.x,p.y); ctx.stroke(); ctx.beginPath(); ctx.moveTo(p.x,p.y);}
+}
+
+function toggleGlobalBack(show) {
+  const btn = document.getElementById("globalBack");
+  if (!btn) return;
+  btn.style.display = show ? "inline-block" : "none";
+}
+
+function clearCanvas(){
+  const canvas = document.getElementById("traceCanvas");
+  if (canvas) {
+    const ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }
+}
+
+/* === Navigate to Level 2 page === */
+function goToLevel2(category){
+  // Redirect to gerlevel2.html with the category parameter
+  window.location.href = `grlevel2.html?category=${category}`;
+}
+
+/* === Navigate to Level 3 page === */
+function goToLevel3(category){
+  // Redirect to gerlevel3.html with the category parameter
+  window.location.href = `grlevel3.html?category=${category}`;
+}
+
+function playGame(gameType){
+  // Redirect to gergames.html with the game parameter
+  window.location.href = `grgames.html?game=${gameType}`;
+}
+
+// FIX: Ensure initialization and content loading happens after DOM is ready
+document.addEventListener('DOMContentLoaded', function() {
+    // Assuming initProgress is defined in grprogress.js
+    if (typeof initProgress === 'function') {
+        initProgress();
+    }
+    // Load the menu content
+    loadLevel1();
+});
+
+</script>
+<script src="grprogress.js"></script>
+<script src="script.js"></script>
+
+</body>
+</html>

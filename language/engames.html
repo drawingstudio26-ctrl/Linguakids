@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#58CC02">
+  <title>LinguaKids - Games</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700&family=Quicksand:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Quicksand', Arial, sans-serif; background: linear-gradient(135deg,#e0eaff 0%,#f6f0ff 100%); margin:0; padding:0; text-align:center; }
+    h2 { color:#58cc02; font-family:'Baloo 2',cursive; }
+    .btn { background:linear-gradient(to right,#58cc02,#1cb0f6); border:none; color:white; padding:12px 20px; border-radius:50px; font-family:'Baloo 2',cursive; cursor:pointer; margin:10px 5px; font-size: 1rem; }
+    .btn:active { transform:scale(0.96); }
+    .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+    .game-container { max-width:600px; margin:20px auto; padding:15px; background:white; border-radius:12px; box-shadow:0 4px 8px rgba(0,0,0,0.05); }
+    .completion-message { background: #e8f5e9; border-radius: 12px; padding: 20px; margin: 20px 0; border: 2px solid #58cc02; }
+    .drop-zone { font-size: 2rem; border: 2px dashed #ccc; border-radius: 10px; padding: 10px; min-height: 80px; display: flex; align-items: center; justify-content: center; margin: 5px; }
+    .drop-zone.drag-over { background-color: #f0f8ff; border-color: #1cb0f6; }
+    .drop-zone.correct { background-color: #e8f5e9; border-color: #58cc02; }
+    .draggable-word { padding: 10px 15px; margin: 5px; cursor: grab; user-select: none; background:linear-gradient(to right,#ff9a00,#ffcc00); border-radius: 50px; color: white; font-weight: bold; }
+    .draggable-word.dragging { opacity: 0.5; }
+    #options-container, #apple-options { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin: 15px 0; }
+    #fillResult, #matchResult, #appleResult { margin-top: 15px; font-weight: bold; font-size: 1.1rem; min-height: 24px; }
+    .progress-bar { width: 100%; height: 10px; background-color: #f0f0f0; border-radius: 5px; margin: 15px 0; overflow: hidden; }
+    .progress-fill { height: 100%; background: linear-gradient(to right, #58cc02, #1cb0f6); width: 0%; transition: width 0.3s ease; }
+    .score-display { font-size: 1.2rem; font-weight: bold; color: #58cc02; margin: 10px 0; }
+  </style>
+</head>
+<body>
+  <button class="btn" onclick="goBack()">Back</button>
+  <h2 id="game-title">Game</h2>
+  <div class="score-display">Score: <span id="score">0</span></div>
+  <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+  <div id="game-content" class="game-container"></div>
+
+<script>
+// ===== PAGE-SPECIFIC DATA AND FUNCTIONS =====
+
+const gameTitle = document.getElementById("game-title");
+const gameContent = document.getElementById("game-content");
+const scoreDisplay = document.getElementById("score");
+const progressFill = document.getElementById("progress-fill");
+const gameType = new URLSearchParams(window.location.search).get('game');
+
+const FILL_QUESTIONS = [
+  { sentence: "I have a ___ 🐶", options: ["cat", "dog", "fish"], answer: "dog" }, 
+  { sentence: "The ___ 🐱 is sleeping", options: ["cat", "dog", "lion"], answer: "cat" },
+  { sentence: "I like to eat ___ 🍎", options: ["apple", "banana", "orange"], answer: "apple" }, 
+  { sentence: "The ___ 🌳 is tall", options: ["tree", "flower", "grass"], answer: "tree" },
+  { sentence: "I drink ___ 💧", options: ["milk", "water", "juice"], answer: "water" }, 
+  { sentence: "The ___ 🦁 roars", options: ["lion", "tiger", "dog"], answer: "lion" },
+  { sentence: "She wears a ___ 👗", options: ["hat", "dress", "shoes"], answer: "dress" }, 
+  { sentence: "The sun rises in the ___ ☀️", options: ["east", "west", "north"], answer: "east" },
+  { sentence: "I brush my ___ 🦷", options: ["hair", "teeth", "hands"], answer: "teeth" }, 
+  { sentence: "The ___ 🐸 jumps", options: ["frog", "cat", "dog"], answer: "frog" }
+];
+
+const MATCH_ROUNDS = [
+  [ { word: "Cat", emoji: "🐱" }, { word: "Dog", emoji: "🐶" }, { word: "Apple", emoji: "🍎" } ],
+  [ { word: "Tree", emoji: "🌳" }, { word: "Sun", emoji: "☀️" }, { word: "Ball", emoji: "⚽" } ],
+  [ { word: "Car", emoji: "🚗" }, { word: "House", emoji: "🏠" }, { word: "Book", emoji: "📚" } ]
+];
+
+const APPLE_GAME_ROUNDS = 5;
+
+// ===== GAME STATE VARIABLES =====
+let currentQuestion = 0;
+let score = 0;
+let currentRound = 0;
+let matchedPairs = 0;
+let draggedElement = null;
+
+// Track completed questions to avoid duplicate progress
+const completedQuestions = {
+  'fill-blanks': new Set(),
+  'match-words': new Set(), 
+  'count-apples': new Set()
+};
+
+function goBack(){ 
+  window.location.href = "english.html"; 
+}
+
+function updateScore(points) {
+  score += points;
+  scoreDisplay.textContent = score;
+}
+
+function updateProgressBar(progress) {
+  progressFill.style.width = `${progress}%`;
+}
+
+// Reset game state when loading a new game
+function loadGame(){
+    score = 0;
+    updateScore(0);
+    currentQuestion = 0;
+    currentRound = 0;
+    matchedPairs = 0;
+    
+    // Reset completion tracking for the current game type
+    if (completedQuestions[gameType]) {
+        completedQuestions[gameType].clear();
+    }
+    
+    switch(gameType){
+      case 'fill-blanks': 
+        gameTitle.textContent = "Fill in the blanks";
+        updateProgressBar(0);
+        showFillQuestion(0); 
+        break;
+      case 'match-words': 
+        gameTitle.textContent = "Match words";
+        updateProgressBar(0);
+        startMatchRound(0); 
+        break;
+      case 'count-apples': 
+        gameTitle.textContent = "Count the apples";
+        updateProgressBar(0);
+        startAppleGame(); 
+        break;
+      default: goBack();
+    }
+}
+
+// ===== FILL IN THE BLANKS GAME =====
+
+function showFillQuestion(index){
+    const q = FILL_QUESTIONS[index];
+    const progress = (index / FILL_QUESTIONS.length) * 100;
+    updateProgressBar(progress);
+    
+    gameContent.innerHTML = `
+      <p><b>${q.sentence}</b></p>
+      <div id="options-container"></div>
+      <p id="fillResult"></p>
+    `;
+    
+    document.getElementById("options-container").innerHTML = 
+      q.options.map(opt => 
+        `<button class="btn" onclick="checkFill('${opt}', ${index})">${opt}</button>`
+      ).join('');
+}
+
+function checkFill(selected, index){
+    const resultElement = document.getElementById("fillResult");
+    
+    if(selected === FILL_QUESTIONS[index].answer) {
+        updateScore(10);
+        resultElement.textContent = "✅ Correct!";
+        resultElement.style.color = "#58cc02";
+        
+        // FIX: Track progress only once per question
+        if (typeof updateProgress === 'function' && !completedQuestions['fill-blanks'].has(index)) {
+            completedQuestions['fill-blanks'].add(index);
+            const success = updateProgress('games', 'fill-blanks', index);
+            if (success) {
+                console.log(`Fill-blanks progress tracked for question ${index}`);
+            }
+        }
+        
+        setTimeout(() => { 
+            if (index + 1 < FILL_QUESTIONS.length) {
+                showFillQuestion(index + 1);
+            } else {
+                updateProgressBar(100);
+                showCompletionMessage('fill-blanks');
+            }
+        }, 1000);
+    } else {
+        updateScore(-5);
+        resultElement.textContent = "❌ Try again!";
+        resultElement.style.color = "#ff4d4d";
+    }
+}
+
+// ===== MATCH WORDS GAME =====
+
+function startMatchRound(roundIndex) {
+    currentRound = roundIndex;
+    matchedPairs = 0;
+    const roundData = MATCH_ROUNDS[roundIndex];
+    const progress = (roundIndex / MATCH_ROUNDS.length) * 100;
+    updateProgressBar(progress);
+    
+    gameContent.innerHTML = `
+      <p>Round ${roundIndex+1}/${MATCH_ROUNDS.length}</p>
+      <p>Drag the words to match the pictures</p>
+      <div id="pics-container" style="display: flex; justify-content: center; flex-wrap: wrap;"></div>
+      <div id="words-container" style="display: flex; justify-content: center; flex-wrap: wrap; margin-top: 20px;"></div>
+      <p id="matchResult"></p>
+    `;
+    
+    // Shuffle the words for more challenge
+    const shuffledWords = [...roundData].sort(() => Math.random() - 0.5);
+    
+    document.getElementById("pics-container").innerHTML = 
+      roundData.map(p => 
+        `<div class="drop-zone" data-answer="${p.word}">${p.emoji}</div>`
+      ).join("");
+    
+    document.getElementById("words-container").innerHTML = 
+      shuffledWords.map(p => 
+        `<div class="draggable-word" draggable="true" data-word="${p.word}">${p.word}</div>`
+      ).join("");
+    
+    setupDragAndDrop();
+}
+
+function setupDragAndDrop() {
+  const draggables = document.querySelectorAll('.draggable-word');
+  const dropZones = document.querySelectorAll('.drop-zone');
+
+  // Remove existing event listeners
+  draggables.forEach(draggable => {
+    draggable.replaceWith(draggable.cloneNode(true));
+  });
+  dropZones.forEach(zone => {
+    zone.replaceWith(zone.cloneNode(true));
+  });
+
+  // Get fresh references
+  const freshDraggables = document.querySelectorAll('.draggable-word');
+  const freshDropZones = document.querySelectorAll('.drop-zone');
+
+  // Add event listeners for draggable elements
+  freshDraggables.forEach(draggable => {
+    draggable.addEventListener('dragstart', dragStart);
+    draggable.addEventListener('dragend', dragEnd);
+  });
+
+  // Add event listeners for drop zones
+  freshDropZones.forEach(zone => {
+    zone.addEventListener('dragover', dragOver);
+    zone.addEventListener('dragenter', dragEnter);
+    zone.addEventListener('dragleave', dragLeave);
+    zone.addEventListener('drop', drop);
+  });
+}
+
+function dragStart(e) {
+  draggedElement = this;
+  this.classList.add('dragging');
+  e.dataTransfer.setData('text/plain', this.dataset.word);
+}
+
+function dragEnd() {
+  this.classList.remove('dragging');
+  draggedElement = null;
+}
+
+function dragOver(e) {
+  e.preventDefault();
+}
+
+function dragEnter(e) {
+  e.preventDefault();
+  this.classList.add('drag-over');
+}
+
+function dragLeave() {
+  this.classList.remove('drag-over');
+}
+
+function drop(e) {
+  e.preventDefault();
+  this.classList.remove('drag-over');
+  
+  const droppedWord = e.dataTransfer.getData('text/plain');
+  const correctWord = this.dataset.answer;
+  
+  if (droppedWord === correctWord) {
+    this.classList.add('correct');
+    this.innerHTML = `${this.textContent} ${droppedWord}`;
+    
+    // Disable the draggable element
+    const draggable = document.querySelector(`.draggable-word[data-word="${droppedWord}"]`);
+    draggable.style.visibility = 'hidden';
+    
+    updateScore(15);
+    matchedPairs++;
+    
+    if (matchedPairs === MATCH_ROUNDS[currentRound].length) {
+      document.getElementById("matchResult").textContent = "✅ All matches correct!";
+      document.getElementById("matchResult").style.color = "#58cc02";
+      
+      // FIX: Track progress only when round is completed
+      if (typeof updateProgress === 'function' && !completedQuestions['match-words'].has(currentRound)) {
+        completedQuestions['match-words'].add(currentRound);
+        const success = updateProgress('games', 'match-words', currentRound);
+        if (success) {
+            console.log(`Match-words progress tracked for round ${currentRound}`);
+        }
+      }
+      
+      setTimeout(() => {
+        if (currentRound + 1 < MATCH_ROUNDS.length) {
+          startMatchRound(currentRound + 1);
+        } else {
+          updateProgressBar(100);
+          showCompletionMessage('match-words');
+        }
+      }, 1500);
+    }
+  } else {
+    updateScore(-5);
+    document.getElementById("matchResult").textContent = "❌ Try again!";
+    document.getElementById("matchResult").style.color = "#ff4d4d";
+    
+    setTimeout(() => {
+      document.getElementById("matchResult").textContent = "";
+    }, 1000);
+  }
+}
+
+// ===== COUNT APPLES GAME =====
+
+function startAppleGame() {
+  if (currentQuestion >= APPLE_GAME_ROUNDS) {
+    updateProgressBar(100);
+    showCompletionMessage('count-apples'); 
+    return;
+  }
+  
+  currentQuestion++;
+  const progress = (currentQuestion / APPLE_GAME_ROUNDS) * 100;
+  updateProgressBar(progress);
+  
+  const count = Math.floor(Math.random() * 5) + 1;
+  const options = generateOptions(count);
+  
+  gameContent.innerHTML = `
+    <p>Question ${currentQuestion}/${APPLE_GAME_ROUNDS}</p>
+    <p style="font-size:2.5rem; margin: 20px 0;">${"🍎".repeat(count)}</p>
+    <p>How many apples do you see?</p>
+    <div id="apple-options"></div>
+    <p id="appleResult"></p>
+  `;
+  
+  document.getElementById("apple-options").innerHTML = 
+    options.map(opt => 
+      `<button class="btn" onclick="checkAppleCount(${opt}, ${count})">${opt}</button>`
+    ).join('');
+}
+
+function generateOptions(correctCount) {
+  const options = [correctCount];
+  
+  // Add some wrong options
+  while (options.length < 3) {
+    const randomOption = Math.floor(Math.random() * 5) + 1;
+    if (!options.includes(randomOption)) {
+      options.push(randomOption);
+    }
+  }
+  
+  // Shuffle the options
+  return options.sort(() => Math.random() - 0.5);
+}
+
+function checkAppleCount(selected, correct) {
+  const resultElement = document.getElementById("appleResult");
+  
+  if (selected === correct) {
+    updateScore(10);
+    resultElement.textContent = "✅ Correct!";
+    resultElement.style.color = "#58cc02";
+    
+    // FIX: Track progress only once per question
+    if (typeof updateProgress === 'function' && !completedQuestions['count-apples'].has(currentQuestion)) {
+      completedQuestions['count-apples'].add(currentQuestion);
+      const success = updateProgress('games', 'count-apples', currentQuestion);
+      if (success) {
+          console.log(`Count-apples progress tracked for question ${currentQuestion}`);
+      }
+    }
+    
+    setTimeout(() => {
+      startAppleGame();
+    }, 1000);
+  } else {
+    updateScore(-5);
+    resultElement.textContent = "❌ Try again!";
+    resultElement.style.color = "#ff4d4d";
+  }
+}
+
+// ===== COMPLETION MESSAGE =====
+
+function showCompletionMessage(game) {
+    gameContent.innerHTML = `
+      <div class="completion-message">
+        <h3>🎉 Game Complete! 🎉</h3>
+        <p>Your final score: ${score}</p>
+        <p>Great job! You've completed the ${gameTitle.textContent} game.</p>
+        <button class="btn" onclick="goBack()">Back to Lessons</button>
+        <button class="btn" onclick="playAgain()">Play Again</button>
+      </div>
+    `;
+}
+
+function playAgain() {
+    // Reset game state and reload
+    currentQuestion = 0;
+    score = 0;
+    currentRound = 0;
+    matchedPairs = 0;
+    
+    // Clear completion tracking for fresh start
+    if (completedQuestions[gameType]) {
+        completedQuestions[gameType].clear();
+    }
+    
+    loadGame();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    if (typeof initProgress === 'function') {
+        initProgress();
+    }
+    loadGame();
+});
+</script>
+
+<script src="progress.js"></script>
+<script src="script.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="mr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#58CC02">
+  <title>LinguaKids - Marathi Games</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700&family=Quicksand:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    body, html { 
+      margin: 0; 
+      padding: 0; 
+      font-family: 'Quicksand', sans-serif; 
+      background:#f6f8ff; 
+      overflow-x: hidden;
+    }
+
+    h2 { 
+      text-align:center; 
+      color:#58cc02; 
+      font-family:'Baloo 2', cursive; 
+    }
+
+    .game-container {
+      max-width: 800px;
+      margin: 20px auto;
+      padding: 20px;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    .question {
+      font-size: 1.5rem;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .options {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+      margin: 20px 0;
+    }
+
+    .option {
+      padding: 15px;
+      background: #f0f4ff;
+      border: 2px solid #d0d8ff;
+      border-radius: 8px;
+      cursor: pointer;
+      text-align: center;
+      font-size: 1.2rem;
+      transition: all 0.3s;
+    }
+
+    .option:hover {
+      background: #e0e8ff;
+      transform: translateY(-2px);
+    }
+
+    .option.correct {
+      background: #d4edda;
+      border-color: #c3e6cb;
+    }
+
+    .option.incorrect {
+      background: #f8d7da;
+      border-color: #f5c6cb;
+    }
+
+    .btn {
+      background: linear-gradient(to right,#58cc02,#1cb0f6);
+      border: none; 
+      color: white; 
+      padding: 10px 20px; 
+      border-radius: 50px;
+      font-family: 'Baloo 2', cursive; 
+      cursor: pointer; 
+      margin: 10px 5px;
+      font-size: 1rem;
+    }
+     .btn:active { transform: scale(0.96); }
+
+    .score {
+      text-align: center;
+      font-size: 1.2rem;
+      margin: 15px 0;
+      font-weight: bold;
+    }
+
+    .result {
+      text-align: center;
+      font-size: 1.3rem;
+      margin: 20px 0;
+      padding: 15px;
+      border-radius: 8px;
+    }
+
+    .result.correct {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .result.incorrect {
+      background: #f8d7da;
+      color: #721c24;
+    }
+
+    /* Match game specific styles */
+    .drop-zone {
+      font-size: 2rem;
+      border: 2px dashed #ccc;
+      border-radius: 10px;
+      padding: 10px;
+      min-height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 5px;
+      transition: all 0.3s;
+    }
+    
+    .draggable-word {
+      padding: 10px 15px;
+      margin: 5px;
+      cursor: grab;
+      user-select: none;
+      transition: all 0.3s;
+      background: linear-gradient(to right,#58cc02,#1cb0f6);
+      color: white;
+      border-radius: 8px;
+      font-family: 'Baloo 2', cursive;
+    }
+    
+    .draggable-word:active {
+      cursor: grabbing;
+    }
+    
+    .match-container {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    
+    .pictures-container, .words-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+    }
+    
+    .completion-message {
+      background: #e8f5e9;
+      border-radius: 12px;
+      padding: 20px;
+      margin: 20px 0;
+      border: 2px solid #58cc02;
+    }
+
+    @media (max-width: 600px) {
+      .options {
+        grid-template-columns: 1fr;
+      }
+      .pictures-container, .words-container {
+        flex-direction: column;
+        align-items: center;
+      }
+      .drop-zone, .draggable-word {
+        margin: 5px 0;
+        width: 100%;
+        max-width: 200px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <button onclick="goBack()" class="btn">Back</button>
+  <h2 id="gameTitle">Marathi Learning Games</h2>
+  <div id="gameContainer" class="game-container"></div>
+
+<script>
+// ===== PAGE-SPECIFIC DATA AND FUNCTIONS =====
+
+const MARATHI_NUMBERS = { 1: "१", 2: "२", 3: "३", 4: "४", 5: "५", 6: "६", 7: "७", 8: "८", 9: "९", 10: "१०" };
+
+const GAMES = {
+  'fill-blanks': {
+    title: "Fill in the Blanks",
+    questions: [
+      { question: "सफरचंदाचा रंग ___ आहे.", options: ["लाल", "निळा", "हिरवा", "पिवळा"], correct: 0, hint: "🔴" },
+      { question: "आकाशाचा रंग ___ आहे.", options: ["लाल", "निळा", "हिरवा", "पिवळा"], correct: 1, hint: "🟦" },
+      { question: "झाडाचा रंग ___ आहे.", options: ["लाल", "निळा", "हिरवा", "पिवळा"], correct: 2, hint: "🌳" },
+      { question: "केळ ___ आहे.", options: ["लाल", "निळा", "हिरवा", "पिवळा"], correct: 3, hint: "🍌" },
+      { question: "सूर्य ___ आहे.", options: ["लाल", "निळा", "पिवळा", "पांढरा"], correct: 2, hint: "🌞" }
+    ]
+  },
+  'match-words': {
+    title: "Match Words with Pictures",
+    rounds: [
+      [ { marathi: "सफरचंद", emoji: "🍎" }, { marathi: "केळ", emoji: "🍌" }, { marathi: "गाडी", emoji: "🚗" }, { marathi: "कुत्रा", emoji: "🐶" }, { marathi: "पुस्तक", emoji: "📖" } ],
+      [ { marathi: "फूल", emoji: "🌹" }, { marathi: "मांजर", emoji: "🐱" }, { marathi: "सूर्य", emoji: "☀️" }, { marathi: "झाड", emoji: "🌳" }, { marathi: "मासा", emoji: "🐟" } ]
+    ]
+  },
+  'count-apples': {
+    title: "Count the Apples",
+    totalQuestions: 5
+  }
+};
+
+const urlParams = new URLSearchParams(window.location.search);
+const gameType = urlParams.get('game');
+
+let currentGame = null;
+let currentQuestion = 0;
+let score = 0;
+let currentRound = 0;
+let roundScore = 0;
+
+function initGame() {
+  if (gameType && GAMES[gameType]) {
+    currentGame = GAMES[gameType];
+    document.getElementById('gameTitle').textContent = currentGame.title;
+    
+    switch(gameType) {
+      case 'fill-blanks': startFillBlanksGame(); break;
+      case 'match-words': startMatchGame(); break;
+      case 'count-apples': startCountApplesGame(); break;
+      default: showGameSelection();
+    }
+  } else {
+    showGameSelection();
+  }
+}
+
+function showGameSelection() {
+  document.getElementById('gameContainer').innerHTML = `
+    <div style="text-align: center;">
+      <h3>Choose a Game</h3>
+      <button class="btn" onclick="loadGame('fill-blanks')">Fill in the Blanks</button>
+      <button class="btn" onclick="loadGame('match-words')">Match Words</button>
+      <button class="btn" onclick="loadGame('count-apples')">Count Apples</button>
+    </div>
+  `;
+}
+
+function loadGame(type) {
+  window.location.href = `mrgames.html?game=${type}`;
+}
+
+// --- Fill in the Blanks Game ---
+function startFillBlanksGame() {
+  if (currentQuestion >= currentGame.questions.length) {
+    showFinalScore();
+    return;
+  }
+  const q = currentGame.questions[currentQuestion];
+  document.getElementById('gameContainer').innerHTML = `
+    <div class="score">Score: ${score}/${currentGame.questions.length}</div>
+    <div class="question">${q.question}</div>
+    <div class="options">${q.options.map((opt, i) => `<div class="option" onclick="checkFillBlanksAnswer(${i})">${opt}</div>`).join('')}</div>
+  `;
+}
+
+function checkFillBlanksAnswer(selectedIndex) {
+  const q = currentGame.questions[currentQuestion];
+  const options = document.querySelectorAll('.option');
+  
+  options.forEach((option, index) => {
+    if (index === q.correct) option.classList.add('correct');
+    else if (index === selectedIndex) option.classList.add('incorrect');
+    option.style.pointerEvents = 'none';
+  });
+
+  if (selectedIndex === q.correct) score++;
+
+  setTimeout(() => {
+    currentQuestion++;
+    startFillBlanksGame();
+  }, 1500);
+}
+
+// --- Match Words Game ---
+function startMatchGame() {
+  if (currentRound >= currentGame.rounds.length) {
+    showMatchCompletion();
+    return;
+  }
+  const roundData = currentGame.rounds[currentRound];
+  roundScore = 0;
+  document.getElementById('gameContainer').innerHTML = `
+    <div class="score">Round ${currentRound + 1}: Match the pairs</div>
+    <div class="match-container">
+      <div class="pictures-container">${roundData.map(item => `<div class="drop-zone" data-answer="${item.marathi}">${item.emoji}</div>`).join('')}</div>
+      <div class="words-container">${shuffleArray(roundData.map(item => item.marathi)).map(word => `<div class="draggable-word" draggable="true">${word}</div>`).join('')}</div>
+    </div>
+    <p id="matchResult" style="text-align:center; margin-top:15px; font-weight:bold;"></p>
+  `;
+  initDragAndDrop();
+}
+
+function initDragAndDrop() {
+  document.querySelectorAll('.draggable-word').forEach(d => d.addEventListener('dragstart', e => e.dataTransfer.setData('text/plain', d.textContent)));
+  document.querySelectorAll('.drop-zone').forEach(z => {
+    z.addEventListener('dragover', e => e.preventDefault());
+    z.addEventListener('drop', e => {
+      e.preventDefault();
+      handleDrop(e.dataTransfer.getData('text/plain'), z);
+    });
+  });
+}
+
+function handleDrop(word, dropZone) {
+  if (word === dropZone.dataset.answer) {
+    dropZone.innerHTML = `${dropZone.innerHTML} ✅`;
+    dropZone.style.pointerEvents = 'none';
+    roundScore++;
+    document.querySelectorAll('.draggable-word').forEach(d => { if (d.textContent === word) d.remove(); });
+    if (roundScore === currentGame.rounds[currentRound].length) {
+      setTimeout(() => { currentRound++; startMatchGame(); }, 1000);
+    }
+  }
+}
+
+function showMatchCompletion() {
+  trackGameProgress(gameType);
+  document.getElementById('gameContainer').innerHTML = `
+    <div class="completion-message">
+      <h3>🎉 Congratulations! 🎉</h3>
+      <p>You've completed all the word matching rounds!</p>
+      <button class="btn" onclick="restartGame()">Play Again</button>
+      <button class="btn" onclick="goBack()">Back to Menu</button>
+    </div>
+  `;
+}
+
+// --- Count Apples Game ---
+function startCountApplesGame() {
+  if (currentQuestion >= currentGame.totalQuestions) {
+    showFinalScore();
+    return;
+  }
+  const count = Math.floor(Math.random() * 10) + 1;
+  let options = new Set([count]);
+  while (options.size < 4) {
+    options.add(Math.floor(Math.random() * 10) + 1);
+  }
+  const shuffledOptions = shuffleArray(Array.from(options));
+  document.getElementById('gameContainer').innerHTML = `
+    <div class="score">Score: ${score} | Question ${currentQuestion + 1}/${currentGame.totalQuestions}</div>
+    <div class="question">How many apples?</div>
+    <div style="text-align: center; font-size: 3rem; margin: 20px 0;">${'🍎'.repeat(count)}</div>
+    <div class="options">${shuffledOptions.map(num => `<div class="option" onclick="checkAppleCount(${num}, ${count})">${MARATHI_NUMBERS[num]}</div>`).join('')}</div>
+  `;
+}
+
+function checkAppleCount(selected, actual) {
+  const options = document.querySelectorAll('.option');
+  options.forEach(option => {
+    const num = parseInt(getKeyByValue(MARATHI_NUMBERS, option.textContent));
+    if (num === actual) option.classList.add('correct');
+    else if (num === selected) option.classList.add('incorrect');
+    option.style.pointerEvents = 'none';
+  });
+  if (selected === actual) score++;
+  setTimeout(() => { currentQuestion++; startCountApplesGame(); }, 1500);
+}
+
+// --- Common Game Functions ---
+function trackGameProgress(game) {
+  if (typeof updateMarathiProgress === 'function') {
+    // Calling the global function from mrprogress.js
+    // We pass the gameType as the 'category' and null as the 'itemId' 
+    // to signify that the entire game has been completed once.
+    updateMarathiProgress('games', game);
+  }
+}
+
+function showFinalScore() {
+  trackGameProgress(gameType); // Award progress upon finishing the game
+  const total = gameType === 'fill-blanks' ? currentGame.questions.length : currentGame.totalQuestions;
+  document.getElementById('gameContainer').innerHTML = `
+    <div style="text-align: center;">
+      <h3>Game Completed!</h3>
+      <div class="score">Final Score: ${score} / ${total}</div>
+      <div style="font-size: 4rem; margin: 20px 0;">🎉</div>
+      <button class="btn" onclick="restartGame()">Play Again</button>
+      <button class="btn" onclick="goBack()">Back to Menu</button>
+    </div>
+  `;
+}
+
+function restartGame() {
+  currentQuestion = 0;
+  score = 0;
+  currentRound = 0;
+  roundScore = 0;
+  initGame();
+}
+
+function goBack() {
+  window.location.href = 'marathi.html';
+}
+
+function shuffleArray(array) {
+  return array.sort(() => Math.random() - 0.5);
+}
+
+function getKeyByValue(object, value) {
+  return Object.keys(object).find(key => object[key] === value);
+}
+
+// ===== INITIALIZATION =====
+document.addEventListener('DOMContentLoaded', function() {
+  if (typeof initMarathiProgress === 'function') {
+    initMarathiProgress();
+  }
+  initGame();
+});
+</script>
+
+<script src="mrprogress.js"></script>
+<script src="script.js"></script>
+
+</body>
+</html>

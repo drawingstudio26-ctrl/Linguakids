@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#58CC02">
+  <title>LinguaKids - Hindi</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700&family=Quicksand:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+    body {
+        font-family: 'Quicksand', Arial, sans-serif;
+        background: linear-gradient(135deg, #e0eaff 0%, #f6f0ff 100%);
+        margin: 0;
+        padding: 0;
+    }
+    
+    #app { 
+        max-width: 1000px; 
+        margin: auto; 
+        padding: 15px; 
+        position: relative;
+        padding-top: 50px;
+    }
+    
+    h2 { 
+        text-align: center; 
+        color: #58cc02; 
+        font-family: 'Baloo 2', cursive; 
+    }
+    
+    .sub-container, .letters-grid, .numbers-grid {
+        display: grid; 
+        grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+        gap: 15px; 
+        margin-top: 20px;
+    }
+    
+    .sub-card, .letter-card, .number-card {
+        background: white; 
+        padding: 20px; 
+        border-radius: 12px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05); 
+        text-align: center;
+        cursor: pointer; 
+        transition: transform 0.3s, box-shadow 0.3s;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        white-space: normal;
+    }
+    
+    .letter-card, .number-card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-height: 140px;
+        justify-content: space-between;
+    }
+    
+    .sub-card:hover, .letter-card:hover, .number-card:hover {
+        transform: translateY(-5px); 
+        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .main-char { 
+        font-size: 2rem; 
+        font-weight: bold; 
+        color: #58cc02; 
+    }
+    
+    .small-char { 
+        font-size: 1.2rem; 
+        color: #1cb0f6; 
+    }
+    
+    .example { 
+        margin-top: 5px; 
+        font-size: 1rem; 
+        line-height: 1.2;
+    }
+    
+    .letter-card .example, .number-card .example {
+        font-size: 0.9rem;
+        max-height: 2.4em;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        line-clamp: 2;
+    }
+    
+    .balls { 
+        font-size: 1.5rem; 
+        margin-top: 10px; 
+        word-wrap: break-word; 
+    }
+    
+    .btn {
+        background: linear-gradient(to right, #58cc02, #1cb0f6);
+        border: none; 
+        color: white; 
+        padding: 8px 20px; 
+        border-radius: 50px;
+        font-family: 'Baloo 2', cursive; 
+        cursor: pointer; 
+        margin: 10px 5px;
+        transition: transform 0.2s;
+    }
+    
+    .btn:active { 
+        transform: scale(0.96); 
+    }
+    
+    .lesson-controls {
+        display: flex; 
+        justify-content: center; 
+        gap: 10px; 
+        margin-top: 15px;
+        flex-wrap: wrap;
+    }
+    
+    canvas {
+        border: 2px solid #ccc; 
+        border-radius: 12px; 
+        background: #fff;
+        display: block; 
+        margin: 15px auto;
+    }
+    
+    .lesson-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        margin-top: 20px;
+    }
+    
+    .lesson-container .main-char {
+        font-size: 3rem;
+    }
+    
+    .lesson-container .example {
+        font-size: 1.3rem;
+        margin: 10px 0;
+    }
+    
+    .trace-area {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin: 10px 0;
+    }
+    
+    .clear-btn {
+        background: #ff6b6b;
+        padding: 5px 15px;
+        font-size: 0.9rem;
+        border-radius: 8px;
+        margin-top: 8px;
+        transition: background 0.3s;
+    }
+    
+    .clear-btn:hover {
+        background: #ff5252;
+    }
+    
+    .sub-card h3 {
+        font-size: 1.1rem;
+        margin: 5px 0;
+    }
+    
+    .sub-card p {
+        font-size: 0.9rem;
+        margin: 0;
+        line-height: 1.2;
+    }
+    
+    /* Toast notifications */
+    .toast {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: #58cc02;
+        color: white;
+        padding: 15px 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        z-index: 1000;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        transform: translateY(100px);
+        opacity: 0;
+        transition: transform 0.3s, opacity 0.3s;
+    }
+    
+    .toast.show {
+        transform: translateY(0);
+        opacity: 1;
+    }
+    
+    /* Sound button */
+    .sound-btn {
+        background: #1cb0f6;
+        border: none;
+        border-radius: 50%;
+        width: 36px;
+        height: 36px;
+        color: white;
+        font-size: 1rem;
+        cursor: pointer;
+        margin-top: 8px;
+        transition: all 0.2s;
+    }
+    
+    .sound-btn:hover {
+        background: #0a9bd8;
+        transform: scale(1.05);
+    }
+    
+    .sound-btn:active {
+        transform: scale(0.95);
+    }
+    
+    /* Tab navigation */
+    .tab-container {
+        display: flex;
+        justify-content: center;
+        margin: 20px 0;
+        flex-wrap: wrap;
+    }
+    
+    .tab-btn {
+        background: #e0e0e0;
+        border: none;
+        padding: 10px 20px;
+        margin: 0 5px;
+        border-radius: 20px;
+        cursor: pointer;
+        font-family: 'Baloo 2', cursive;
+        transition: all 0.3s;
+    }
+    
+    .tab-btn.active {
+        background: linear-gradient(to right, #58cc02, #1cb0f6);
+        color: white;
+    }
+    
+    .tab-btn:hover:not(.active) {
+        background: #d0d0d0;
+    }
+    
+    /* Numbers grid for 1-100 */
+    .numbers-grid-100 {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+        gap: 10px;
+        margin-top: 20px;
+    }
+    
+    .number-card-100 {
+        background: white;
+        padding: 10px;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        text-align: center;
+        cursor: pointer;
+        transition: 0.3s;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: space-between;
+    }
+    
+    .number-card-100:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .number-card-100 .main-char {
+        font-size: 1.5rem;
+        margin-bottom: 5px;
+    }
+    
+    .number-card-100 .small-char {
+        font-size: 0.9rem;
+        color: #1cb0f6;
+    }
+    
+    /* Pagination */
+    .pagination {
+        display: flex;
+        justify-content: center;
+        margin: 20px 0;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+    
+    .pagination-btn {
+        background: #e0e0e0;
+        border: none;
+        padding: 8px 15px;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: all 0.3s;
+        font-size: 0.9rem;
+    }
+    
+    .pagination-btn.active {
+        background: #58cc02;
+        color: white;
+    }
+    
+    .pagination-btn:hover:not(.active) {
+        background: #d0d0d0;
+    }
+    
+    /* Back button */
+    #globalBack, .back-btn-lesson {
+        position: fixed;
+        top: 15px;
+        left: 15px;
+        z-index: 1000;
+        margin: 0;
+        background: linear-gradient(to right, #58cc02, #1cb0f6);
+        border: none;
+        color: white;
+        padding: 8px 15px;
+        border-radius: 50px;
+        font-family: 'Baloo 2', cursive;
+        cursor: pointer;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    #globalBack:hover, .back-btn-lesson:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    }
+    
+    #globalBack:active, .back-btn-lesson:active {
+        transform: scale(0.95);
+    }
+    
+    /* Progress indicator */
+    .progress-indicator {
+        position: absolute;
+        top: 10px;
+        right: 15px;
+        background: #58cc02;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 15px;
+        font-size: 0.8rem;
+        font-family: 'Baloo 2', cursive;
+    }
+    
+    /* Mobile responsiveness */
+    @media (max-width: 600px) {
+        .main-char { font-size: 1.5rem; } 
+        .small-char { font-size: 1rem; } 
+        .example { font-size: 0.9rem; }
+        
+        .sub-container {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        
+        .sub-card {
+            padding: 15px;
+        }
+        
+        .sub-card h3 { 
+            font-size: 1rem; 
+        }
+        
+        .sub-card p { 
+            font-size: 0.8rem; 
+        }
+        
+        #globalBack, .back-btn-lesson {
+            top: 10px;
+            left: 10px;
+            padding: 6px 12px;
+            font-size: 0.9rem;
+        }
+        
+        #app {
+            padding-top: 45px;
+        }
+        
+        .lesson-container .main-char {
+            font-size: 2.5rem;
+        }
+        
+        .lesson-container .example {
+            font-size: 1.1rem;
+        }
+        
+        .progress-indicator {
+            top: 5px;
+            right: 10px;
+            font-size: 0.7rem;
+            padding: 3px 8px;
+        }
+    }
+</style>
+</head>
+<body>
+  <button id="globalBack" onclick="goBackHome()">Back</button>
+<div id="app">
+  <div class="progress-indicator" id="progressIndicator">Progress: 0%</div>
+  <div id="learning-content"></div>
+</div>
+
+<div id="achievementToast" class="toast">
+  <i class="fas fa-trophy"></i>
+  <div>
+    <div id="toastTitle">Achievement Unlocked!</div>
+    <div id="toastDesc">You've earned a new badge.</div>
+  </div>
+</div>
+
+<script>
+// ===== DATA CONSTANTS =====
+const VOWELS = [
+  {hindi:"अ", english:"a", word:"अनार (Pomegranate 🍎)", pronunciation:"a"},
+  {hindi:"आ", english:"aa", word:"आम (Mango 🥭)", pronunciation:"aa"},
+  {hindi:"इ", english:"i", word:"इमली (Tamarind 🌿)", pronunciation:"i"},
+  {hindi:"ई", english:"ee", word:"ईख (Sugarcane 🎋)", pronunciation:"ee"},
+  {hindi:"उ", english:"u", word:"उल्लू (Owl 🦉)", pronunciation:"u"},
+  {hindi:"ऊ", english:"oo", word:"ऊन (Wool 🧶)", pronunciation:"oo"},
+  {hindi:"ए", english:"e", word:"एक (One 1️⃣)", pronunciation:"e"},
+  {hindi:"ऐ", english:"ai", word:"ऐनक (Spectacles 👓)", pronunciation:"ai"},
+  {hindi:"ओ", english:"o", word:"ओस (Dew 💧)", pronunciation:"o"},
+  {hindi:"औ", english:"au", word:"औरत (Woman 👩)", pronunciation:"au"},
+  {hindi:"अं", english:"am", word:"अंगूर (Grapes 🍇)", pronunciation:"am"},
+  {hindi:"अः", english:"ah", word:"अः (Auspicious sign 🙏)", pronunciation:"ah"}
+];
+
+const CONSONANTS = [
+  {hindi:"क", english:"ka", word:"कबूतर (Pigeon 🕊️)", pronunciation:"ka"}, {hindi:"ख", english:"kha", word:"खरगोश (Rabbit 🐇)", pronunciation:"kha"}, {hindi:"ग", english:"ga", word:"गाय (Cow 🐄)", pronunciation:"ga"}, {hindi:"घ", english:"gha", word:"घर (House 🏠)", pronunciation:"gha"}, {hindi:"ङ", english:"nga", word:"ङ (Velar nasal)", pronunciation:"nga"}, {hindi:"च", english:"cha", word:"चाबी (Key 🔑)", pronunciation:"cha"}, {hindi:"छ", english:"chha", word:"छतरी (Umbrella ☂️)", pronunciation:"chha"}, {hindi:"ज", english:"ja", word:"जहाज (Ship 🚢)", pronunciation:"ja"}, {hindi:"झ", english:"jha", word:"झंडा (Flag 🚩)", pronunciation:"jha"}, {hindi:"ञ", english:"nya", word:"ञ (Palatal nasal)", pronunciation:"nya"}, {hindi:"ट", english:"ta", word:"टमाटर (Tomato 🍅)", pronunciation:"ta"}, {hindi:"ठ", english:"tha", word:"ठेला (Cart 🛒)", pronunciation:"tha"}, {hindi:"ड", english:"da", word:"डमरू (Drum 🥁)", pronunciation:"da"}, {hindi:"ढ", english:"dha", word:"ढोल (Drum 🥁)", pronunciation:"dha"}, {hindi:"ण", english:"na", word:"ण (Retroflex nasal)", pronunciation:"na"}, {hindi:"त", english:"ta", word:"तरबूज (Watermelon 🍉)", pronunciation:"ta"}, {hindi:"थ", english:"tha", word:"थैला (Bag 🎒)", pronunciation:"tha"}, {hindi:"द", english:"da", word:"दरवाजा (Door 🚪)", pronunciation:"da"}, {hindi:"ध", english:"dha", word:"धनुष (Bow 🏹)", pronunciation:"dha"}, {hindi:"न", english:"na", word:"नारियल (Coconut 🥥)", pronunciation:"na"}, {hindi:"प", english:"pa", word:"पतंग (Kite 🪁)", pronunciation:"pa"}, {hindi:"फ", english:"pha", word:"फल (Fruit 🍎)", pronunciation:"pha"}, {hindi:"ब", english:"ba", word:"बत्तख (Duck 🦆)", pronunciation:"ba"}, {hindi:"भ", english:"bha", word:"भालू (Bear 🐻)", pronunciation:"bha"}, {hindi:"म", english:"ma", word:"मछली (Fish 🐟)", pronunciation:"ma"}, {hindi:"य", english:"ya", word:"योग (Yoga 🧘)", pronunciation:"ya"}, {hindi:"र", english:"ra", word:"रथ (Chariot 🛺)", pronunciation:"ra"}, {hindi:"ल", english:"la", word:"लट्टू (Top 🎯)", pronunciation:"la"}, {hindi:"व", english:"va", word:"वर्षा (Rain 🌧️)", pronunciation:"va"}, {hindi:"श", english:"sha", word:"शेर (Lion 🦁)", pronunciation:"sha"}, {hindi:"ष", english:"sha", word:"षट्कोण (Hexagon ⬢)", pronunciation:"sha"}, {hindi:"स", english:"sa", word:"साप (Snake 🐍)", pronunciation:"sa"}, {hindi:"ह", english:"ha", word:"हाथी (Elephant 🐘)", pronunciation:"ha"}, {hindi:"क्ष", english:"ksha", word:"क्षत्रिय (Warrior ⚔️)", pronunciation:"ksha"}, {hindi:"त्र", english:"tra", word:"त्रिशूल (Trident 🔱)", pronunciation:"tra"}, {hindi:"ज्ञ", english:"gya", word:"ज्ञान (Knowledge 📚)", pronunciation:"gya"}
+];
+
+const NUMBERS_1_TO_100 = [
+    { hindi: "१", english: "1", word: "एक", pronunciation: "ek" }, { hindi: "२", english: "2", word: "दो", pronunciation: "do" }, { hindi: "३", english: "3", word: "तीन", pronunciation: "teen" }, { hindi: "४", english: "4", word: "चार", pronunciation: "chaar" }, { hindi: "५", english: "5", word: "पाँच", pronunciation: "paanch" }, { hindi: "६", english: "6", word: "छह", pronunciation: "chhah" }, { hindi: "७", english: "7", word: "सात", pronunciation: "saat" }, { hindi: "८", english: "8", word: "आठ", pronunciation: "aath" }, { hindi: "९", english: "9", word: "नौ", pronunciation: "nau" }, { hindi: "१०", english: "10", word: "दस", pronunciation: "das" },
+    { hindi: "११", english: "11", word: "ग्यारह", pronunciation: "gyaarah" }, { hindi: "१२", english: "12", word: "बारह", pronunciation: "baarah" }, { hindi: "१३", english: "13", word: "तेरह", pronunciation: "terah" }, { hindi: "१४", english: "14", word: "चौदह", pronunciation: "chaudah" }, { hindi: "१५", english: "15", word: "पंद्रह", pronunciation: "pandrah" }, { hindi: "१६", english: "16", word: "सोलह", pronunciation: "solah" }, { hindi: "१७", english: "17", word: "सत्रह", pronunciation: "satrah" }, { hindi: "१८", english: "18", word: "अठारह", pronunciation: "athaarah" }, { hindi: "१९", english: "19", word: "उन्नीस", pronunciation: "unnees" }, { hindi: "२०", english: "20", word: "बीस", pronunciation: "bees" },
+    { hindi: "२१", english: "21", word: "इक्कीस", pronunciation: "ikkees" }, { hindi: "२२", english: "22", word: "बाईस", pronunciation: "baaees" }, { hindi: "२३", english: "23", word: "तेईस", pronunciation: "teees" }, { hindi: "२४", english: "24", word: "चौबीस", pronunciation: "chaubees" }, { hindi: "२५", english: "25", word: "पच्चीस", pronunciation: "pachchees" }, { hindi: "२६", english: "26", word: "छब्बीस", pronunciation: "chhabbees" }, { hindi: "२७", english: "27", word: "सत्ताईस", pronunciation: "sattaees" }, { hindi: "२८", english: "28", word: "अट्ठाईस", pronunciation: "aththaees" }, { hindi: "२९", english: "29", word: "उनतीस", pronunciation: "untees" }, { hindi: "३०", english: "30", word: "तीस", pronunciation: "tees" },
+    { hindi: "३१", english: "31", word: "इकतीस", pronunciation: "iktees" }, { hindi: "३२", english: "32", word: "बत्तीस", pronunciation: "battees" }, { hindi: "३३", english: "33", word: "तैंतीस", pronunciation: "taintees" }, { hindi: "३४", english: "34", word: "चौंतीस", pronunciation: "chauntees" }, { hindi: "३५", english: "35", word: "पैंतीस", pronunciation: "paintees" }, { hindi: "३६", english: "36", word: "छत्तीस", pronunciation: "chhattees" }, { hindi: "३७", english: "37", word: "सैंतीस", pronunciation: "saintees" }, { hindi: "३८", english: "38", word: "अड़तीस", pronunciation: "adtees" }, { hindi: "३९", english: "39", word: "उनतालीस", pronunciation: "untaalees" }, { hindi: "४०", english: "40", word: "चालीस", pronunciation: "chaalees" },
+    { hindi: "४१", english: "41", word: "इकतालीस", pronunciation: "iktaalees" }, { hindi: "४२", english: "42", word: "बयालीस", pronunciation: "bayaalees" }, { hindi: "४३", english: "43", word: "तैंतालीस", pronunciation: "taintaalees" }, { hindi: "४४", english: "44", word: "चौवालीस", pronunciation: "chauvaalees" }, { hindi: "४५", english: "45", word: "पैंतालीस", pronunciation: "paintaalees" }, { hindi: "४६", english: "46", word: "छियालीस", pronunciation: "chhiyaalees" }, { hindi: "४७", english: "47", word: "सैंतालीस", pronunciation: "saintaalees" }, { hindi: "४८", english: "48", word: "अड़तालीस", pronunciation: "adtaalees" }, { hindi: "४९", english: "49", word: "उनचास", pronunciation: "unchaas" }, { hindi: "५०", english: "50", word: "पचास", pronunciation: "pachaas" },
+    { hindi: "५१", english: "51", word: "इक्यावन", pronunciation: "ikyaavan" }, { hindi: "५२", english: "52", word: "बावन", pronunciation: "baavan" }, { hindi: "५३", english: "53", word: "तिरपन", pronunciation: "tirapan" }, { hindi: "५४", english: "54", word: "चौवन", pronunciation: "chauvan" }, { hindi: "५५", english: "55", word: "पचपन", pronunciation: "pachapan" }, { hindi: "५६", english: "56", word: "छप्पन", pronunciation: "chhappan" }, { hindi: "५७", english: "57", word: "सत्तावन", pronunciation: "sattaavan" }, { hindi: "५८", english: "58", word: "अट्ठावन", pronunciation: "atthaavan" }, { hindi: "५९", english: "59", word: "उनसठ", pronunciation: "unasath" }, { hindi: "६०", english: "60", word: "साठ", pronunciation: "saath" },
+    { hindi: "६१", english: "61", word: "इकसठ", pronunciation: "ikasath" }, { hindi: "६२", english: "62", word: "बासठ", pronunciation: "baasath" }, { hindi: "६३", english: "63", word: "तिरसठ", pronunciation: "tirasath" }, { hindi: "६४", english: "64", word: "चौंसठ", pronunciation: "chaunsath" }, { hindi: "६५", english: "65", word: "पैंसठ", pronunciation: "painsath" }, { hindi: "६६", english: "66", word: "छियासठ", pronunciation: "chhiyaasath" }, { hindi: "६७", english: "67", word: "सरसठ", pronunciation: "sarasath" }, { hindi: "६८", english: "68", word: "अड़सठ", pronunciation: "adasath" }, { hindi: "६९", english: "69", word: "उनहत्तर", pronunciation: "unahattar" }, { hindi: "७०", english: "70", word: "सत्तर", pronunciation: "sattar" },
+    { hindi: "७१", english: "71", word: "इकहत्तर", pronunciation: "ikahattar" }, { hindi: "७२", english: "72", word: "बहत्तर", pronunciation: "bahattar" }, { hindi: "७३", english: "73", word: "तिहत्तर", pronunciation: "tihattar" }, { hindi: "७४", english: "74", word: "चौहत्तर", pronunciation: "chauhattar" }, { hindi: "७५", english: "75", word: "पचहत्तर", pronunciation: "pachahattar" }, { hindi: "७६", english: "76", word: "छिहत्तर", pronunciation: "chhihattar" }, { hindi: "७७", english: "77", word: "सतहत्तर", pronunciation: "satahattar" }, { hindi: "७८", english: "78", word: "अठहत्तर", pronunciation: "athahattar" }, { hindi: "७९", english: "79", word: "उनासी", pronunciation: "unaasee" }, { hindi: "८०", english: "80", word: "अस्सी", pronunciation: "assee" },
+    { hindi: "८१", english: "81", word: "इक्यासी", pronunciation: "ikyaasee" }, { hindi: "८२", english: "82", word: "बयासी", pronunciation: "bayaasee" }, { hindi: "८३", english: "83", word: "तिरासी", pronunciation: "tiraasee" }, { hindi: "८४", english: "84", word: "चौरासी", pronunciation: "chauraasee" }, { hindi: "८५", english: "85", word: "पचासी", pronunciation: "pachaasee" }, { hindi: "८६", english: "86", word: "छियासी", pronunciation: "chhiyaasee" }, { hindi: "८७", english: "87", word: "सत्तासी", pronunciation: "sattaasee" }, { hindi: "८८", english: "88", word: "अट्ठासी", pronunciation: "atthaasee" }, { hindi: "८९", english: "89", word: "नवासी", pronunciation: "navaasee" }, { hindi: "९०", english: "90", word: "नब्बे", pronunciation: "nabbe" },
+    { hindi: "९१", english: "91", word: "इक्यानबे", pronunciation: "ikyaanabe" }, { hindi: "९२", english: "92", word: "बानबे", pronunciation: "baanabe" }, { hindi: "९३", english: "93", word: "तिरानबे", pronunciation: "tiraanabe" }, { hindi: "९४", english: "94", word: "चौरानबे", pronunciation: "chauraanabe" }, { hindi: "९५", english: "95", word: "पंचानबे", pronunciation: "panchaanabe" }, { hindi: "९६", english: "96", word: "छियानबे", pronunciation: "chhiyaanabe" }, { hindi: "९७", english: "97", word: "सत्तानबे", pronunciation: "sattaanabe" }, { hindi: "९८", english: "98", word: "अट्ठानबे", pronunciation: "atthaanabe" }, { hindi: "९९", english: "99", word: "निन्यानबे", pronunciation: "ninyaanabe" }, { hindi: "१००", english: "100", word: "सौ", pronunciation: "sau" }
+];
+
+
+const VOWELS_LENGTH = VOWELS.length;
+const CONSONANTS_LENGTH = CONSONANTS.length;
+const NUMBERS_1_TO_100_LENGTH = NUMBERS_1_TO_100.length;
+const LEVEL2_CATEGORY_LENGTH = 10;
+const LEVEL3_CATEGORY_LENGTH = 10;
+const GAMES_LENGTHS = { 'fill-blanks': 5, 'match-words': 2, 'count-apples': 5 };
+const ITEMS_PER_PAGE = 20;
+
+// Text-to-Speech function for pronunciation
+function speakText(text, lang = 'hi-IN') {
+  if ('speechSynthesis' in window) {
+    window.speechSynthesis.cancel(); // Cancel any previous speech
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = lang;
+    utterance.rate = 0.8; 
+    window.speechSynthesis.speak(utterance);
+  } else {
+    console.log("Speech synthesis not supported");
+  }
+}
+
+// ===== CORE PROGRESS TRACKING SYSTEM =====
+function initHindiProgress() {
+  const defaultProgress = {
+    level1: { alphabets: { completed: 0, total: VOWELS_LENGTH + CONSONANTS_LENGTH }, numbers: { completed: 0, total: NUMBERS_1_TO_100_LENGTH } },
+    level2: { fruits: { completed: 0, total: LEVEL2_CATEGORY_LENGTH }, vegetables: { completed: 0, total: LEVEL2_CATEGORY_LENGTH }, animals: { completed: 0, total: LEVEL2_CATEGORY_LENGTH }, birds: { completed: 0, total: LEVEL2_CATEGORY_LENGTH }, vehicles: { completed: 0, total: LEVEL2_CATEGORY_LENGTH }, colors: { completed: 0, total: LEVEL2_CATEGORY_LENGTH } },
+    level3: { greetings: { completed: 0, total: LEVEL3_CATEGORY_LENGTH }, activities: { completed: 0, total: LEVEL3_CATEGORY_LENGTH }, questions: { completed: 0, total: LEVEL3_CATEGORY_LENGTH } },
+    games: { 'fill-blanks': { completed: 0, total: GAMES_LENGTHS['fill-blanks'] }, 'match-words': { completed: 0, total: GAMES_LENGTHS['match-words'] }, 'count-apples': { completed: 0, total: GAMES_LENGTHS['count-apples'] } },
+    achievements: { firstSteps: false, alphabetMaster: false, numberWhiz: false, wordExpert: false, sentenceBuilder: false, gameChampion: false, weekStreak: false, monthStreak: false },
+    streak: { count: 0, lastDate: null },
+    sessionDate: null
+  };
+
+  let progress;
+  try {
+      progress = JSON.parse(localStorage.getItem('linguaKidsHindiProgress'));
+      if (!progress) {
+          progress = defaultProgress;
+          console.log("Created new Hindi progress data.");
+      } else {
+          progress = { ...defaultProgress, ...progress, 
+              level1: { ...defaultProgress.level1, ...progress.level1 },
+              level2: { ...defaultProgress.level2, ...progress.level2 },
+              level3: { ...defaultProgress.level3, ...progress.level3 },
+              games: { ...defaultProgress.games, ...progress.games }
+          };
+      }
+  } catch (e) {
+      console.error("Error parsing progress data. Resetting to default.", e);
+      progress = defaultProgress;
+  }
+  
+  localStorage.setItem('linguaKidsHindiProgress', JSON.stringify(progress));
+  updateHindiStreak();
+  return progress;
+}
+
+function updateHindiProgress(level, category, increment = 1, itemIdentifier = null) {
+  const progress = JSON.parse(localStorage.getItem('linguaKidsHindiProgress'));
+  const today = new Date().toDateString();
+  
+  if (progress[level] && progress[level][category]) {
+    const itemKey = itemIdentifier ? `${level}_${category}_${itemIdentifier}` : null;
+    const sessionKey = itemKey ? `${itemKey}_${today}` : null;
+
+    if (sessionKey && sessionStorage.getItem(sessionKey)) {
+      console.log("Progress already tracked for this item today.");
+      return false;
+    }
+    
+    if (progress[level][category].completed < progress[level][category].total) { 
+      progress[level][category].completed = Math.min(progress[level][category].completed + increment, progress[level][category].total);
+    } else {
+      return false; 
+    }
+    
+    localStorage.setItem('linguaKidsHindiProgress', JSON.stringify(progress));
+    
+    if (sessionKey) { sessionStorage.setItem(sessionKey, 'true'); }
+
+    updateHindiStreak(); 
+    updateProgressIndicator();
+    showAchievementToast("बहुत बढ़िया! (Great job!)", "आप प्रगति कर रहे हैं! (You're making progress!)");
+    
+    return true;
+  }
+  return false;
+}
+
+function updateHindiStreak() {
+  const progress = JSON.parse(localStorage.getItem('linguaKidsHindiProgress'));
+  const today = new Date().toDateString();
+  
+  if (progress.sessionDate !== today) {
+    let lastDate = progress.streak.lastDate ? new Date(progress.streak.lastDate) : null;
+    const todayDate = new Date();
+    
+    if (lastDate) {
+      const diffTime = todayDate.getTime() - lastDate.getTime();
+      const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+      
+      if (diffDays === 1) { progress.streak.count++; } 
+      else if (diffDays > 1) { progress.streak.count = 1; }
+    } else {
+      progress.streak.count = 1; 
+    }
+    
+    progress.streak.lastDate = today;
+    progress.sessionDate = today;
+    localStorage.setItem('linguaKidsHindiProgress', JSON.stringify(progress));
+  }
+}
+
+function updateProgressIndicator() {
+  const progress = JSON.parse(localStorage.getItem('linguaKidsHindiProgress'));
+  if (!progress) return;
+
+  let totalCompleted = 0;
+  let totalPossible = 0;
+  
+  Object.values(progress.level1).forEach(cat => { totalCompleted += cat.completed; totalPossible += cat.total; });
+  Object.values(progress.level2).forEach(cat => { totalCompleted += cat.completed; totalPossible += cat.total; });
+  Object.values(progress.level3).forEach(cat => { totalCompleted += cat.completed; totalPossible += cat.total; });
+  Object.values(progress.games).forEach(game => { totalCompleted += game.completed; totalPossible += game.total; });
+  
+  const overallProgress = totalPossible > 0 ? Math.round((totalCompleted / totalPossible) * 100) : 0;
+  document.getElementById('progressIndicator').textContent = `Progress: ${overallProgress}%`;
+}
+
+function showAchievementToast(title, description) {
+  const toast = document.getElementById("achievementToast");
+  if(!toast) return;
+  toast.querySelector("#toastTitle").textContent = title;
+  toast.querySelector("#toastDesc").textContent = description;
+  toast.classList.add("show");
+  setTimeout(() => { toast.classList.remove("show"); }, 3000);
+}
+
+// ===== MAIN APPLICATION FUNCTIONS =====
+function loadLevel1(){
+  toggleGlobalBack(true);
+  document.getElementById("learning-content").innerHTML = `
+    <h2>Progress Tracking</h2>
+    <div class="sub-container">
+      <div class="sub-card" onclick="window.location.href='hinprogress.html'">
+        <h3>My Progress</h3><p>Track your learning journey</p>
+      </div>
+    </div>
+
+    <h2>Level 1: Alphabets & Numbers</h2>
+    <div class="sub-container">
+      <div class="sub-card" onclick="loadAlphabetsMenu()"><h3>वर्णमाला (Alphabets)</h3><p>Learn Vowels and Consonants</p></div>
+      <div class="sub-card" onclick="loadNumbersMenu()"><h3>अंक (Numbers)</h3><p>Learn 1–100 in Hindi</p></div>
+    </div>
+    
+    <h2>Level 2: Basic Words</h2>
+    <div class="sub-container">
+      <div class="sub-card" onclick="goToLevel2('fruits')"><h3>फल (Fruits)</h3><p>Learn names of fruits in Hindi</p></div>
+      <div class="sub-card" onclick="goToLevel2('vegetables')"><h3>सब्जियाँ (Vegetables)</h3><p>Learn names of vegetables</p></div>
+      <div class="sub-card" onclick="goToLevel2('animals')"><h3>जानवर (Animals)</h3><p>Learn about animals</p></div>
+      <div class="sub-card" onclick="goToLevel2('birds')"><h3>पक्षी (Birds)</h3><p>Learn about birds</p></div>
+      <div class="sub-card" onclick="goToLevel2('vehicles')"><h3>वाहन (Vehicles)</h3><p>Learn about vehicles</p></div>
+      <div class="sub-card" onclick="goToLevel2('colors')"><h3>रंग (Colors)</h3><p>Learn different colors</p></div>
+    </div>
+
+    <h2>Level 3: Sentences & Expressions</h2>
+    <div class="sub-container">
+      <div class="sub-card" onclick="goToLevel3('greetings')"><h3>Greetings</h3><p>नमस्ते, शुभ प्रभात...</p></div>
+      <div class="sub-card" onclick="goToLevel3('activities')"><h3>Daily Activities</h3><p>मैं खाता हूँ...</p></div>
+      <div class="sub-card" onclick="goToLevel3('questions')"><h3>Simple Q&A</h3><p>What is your name?</p></div>
+    </div>
+
+    <h2>Games</h2>
+    <div class="sub-container">
+      <div class="sub-card" onclick="playGame('fill-blanks')"><h3>Fill in the blanks</h3><p>Practice with missing words</p></div>
+      <div class="sub-card" onclick="playGame('match-words')"><h3>Match words</h3><p>Match words with images</p></div>
+      <div class="sub-card" onclick="playGame('count-apples')"><h3>Count the apples</h3><p>Count and learn numbers</p></div>
+    </div>
+  `;
+}
+
+function loadAlphabetsMenu(){
+  toggleGlobalBack(false);
+  document.getElementById("learning-content").innerHTML = `
+    <button class="btn back-btn-lesson" onclick="loadLevel1()">Back</button>
+    <div class="tab-container">
+      <button class="tab-btn active" id="vowels-tab-btn" onclick="showTab('vowels')">स्वर (Vowels)</button>
+      <button class="tab-btn" id="consonants-tab-btn" onclick="showTab('consonants')">व्यंजन (Consonants)</button>
+    </div>
+    <div id="vowels-tab-content" class="letters-grid">
+      ${VOWELS.map((l, index)=>`
+        <div class="letter-card" onclick="trackAlphabetProgress('vowels', ${index})">
+          <div class="main-char">${l.hindi}</div><div class="small-char">${l.english}</div><div class="example">${l.word}</div>
+          <button class="sound-btn" onclick="event.stopPropagation(); speakText('${l.pronunciation}'); trackAlphabetProgress('vowels', ${index})"><i class="fas fa-volume-up"></i></button>
+        </div>`).join("")}
+    </div>
+    <div id="consonants-tab-content" class="letters-grid" style="display:none;">
+      ${CONSONANTS.map((l, index)=>`
+        <div class="letter-card" onclick="trackAlphabetProgress('consonants', ${index})">
+          <div class="main-char">${l.hindi}</div><div class="small-char">${l.english}</div><div class="example">${l.word}</div>
+          <button class="sound-btn" onclick="event.stopPropagation(); speakText('${l.pronunciation}'); trackAlphabetProgress('consonants', ${index})"><i class="fas fa-volume-up"></i></button>
+        </div>`).join("")}
+    </div>
+  `;
+}
+
+function showTab(tabName) {
+    document.getElementById('vowels-tab-content').style.display = tabName === 'vowels' ? 'grid' : 'none';
+    document.getElementById('consonants-tab-content').style.display = tabName === 'consonants' ? 'grid' : 'none';
+    document.getElementById('vowels-tab-btn').classList.toggle('active', tabName === 'vowels');
+    document.getElementById('consonants-tab-btn').classList.toggle('active', tabName === 'consonants');
+}
+
+function trackAlphabetProgress(type, index) {
+  const identifier = `${type}_${index}`;
+  updateHindiProgress('level1', 'alphabets', 1, identifier);
+}
+
+function loadNumbersMenu() {
+    toggleGlobalBack(false);
+    document.getElementById('learning-content').innerHTML = `
+        <button class="btn back-btn-lesson" onclick="loadLevel1()">Back</button>
+        <h2 style="margin-top: 40px;">Numbers 1-100</h2>
+        <div id="numbers-grid-container"></div>
+        <div id="pagination-container" class="pagination"></div>
+    `;
+    renderNumbersPage(1);
+}
+
+function renderNumbersPage(page) {
+    const gridContainer = document.getElementById('numbers-grid-container');
+    const paginationContainer = document.getElementById('pagination-container');
+    if (!gridContainer || !paginationContainer) return;
+
+    const start = (page - 1) * ITEMS_PER_PAGE;
+    const end = start + ITEMS_PER_PAGE;
+    const pageItems = NUMBERS_1_TO_100.slice(start, end);
+
+    gridContainer.innerHTML = `<div class="numbers-grid-100">
+        ${pageItems.map((num, index) => {
+            const overallIndex = start + index;
+            return `
+            <div class="number-card-100" onclick="trackNumberProgress(${overallIndex})">
+                <div class="main-char">${num.hindi}</div>
+                <div class="small-char">${num.word} (${num.english})</div>
+                <button class="sound-btn" onclick="event.stopPropagation(); speakText('${num.pronunciation}'); trackNumberProgress(${overallIndex});">
+                    <i class="fas fa-volume-up"></i>
+                </button>
+            </div>`;
+        }).join('')}
+    </div>`;
+
+    const totalPages = Math.ceil(NUMBERS_1_TO_100.length / ITEMS_PER_PAGE);
+    paginationContainer.innerHTML = '';
+    for (let i = 1; i <= totalPages; i++) {
+        paginationContainer.innerHTML += `<button class="pagination-btn ${i === page ? 'active' : ''}" onclick="renderNumbersPage(${i})">${i}</button>`;
+    }
+}
+
+function trackNumberProgress(index) {
+    const identifier = `number_${index + 1}`;
+    updateHindiProgress('level1', 'numbers', 1, identifier);
+}
+
+function toggleGlobalBack(show) {
+  const btn = document.getElementById("globalBack");
+  if (!btn) return;
+  btn.style.display = show ? "inline-block" : "none";
+}
+
+function goBackHome(){ window.location.href = "welcome.html"; }
+function goToLevel2(category){ window.location.href = `hinlevel2.html?category=${category}`; }
+function goToLevel3(category){ window.location.href = `hinlevel3.html?category=${category}`; }
+function playGame(gameType){ window.location.href = `hingames.html?game=${gameType}`; }
+
+// Initial Load
+loadLevel1();
+
+// Make functions globally accessible for onclick attributes
+window.loadLevel1 = loadLevel1;
+window.loadAlphabetsMenu = loadAlphabetsMenu;
+window.loadNumbersMenu = loadNumbersMenu;
+window.renderNumbersPage = renderNumbersPage;
+window.trackNumberProgress = trackNumberProgress;
+window.trackAlphabetProgress = trackAlphabetProgress;
+window.showTab = showTab;
+window.goBackHome = goBackHome;
+window.goToLevel2 = goToLevel2;
+window.goToLevel3 = goToLevel3;
+window.playGame = playGame;
+window.speakText = speakText;
+
+document.addEventListener('DOMContentLoaded', function() {
+  initHindiProgress();
+  updateProgressIndicator();
+});
+</script>
+</body>
+</html>

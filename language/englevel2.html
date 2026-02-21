@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#58CC02">
+  <title>LinguaKids - Level 2</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700&family=Quicksand:wght@400;500;600&display=swap" rel="stylesheet">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+<style>
+  body, html { 
+    margin: 0; 
+    padding: 0; 
+    font-family: 'Quicksand', sans-serif; 
+    background:#f6f8ff; 
+    overflow-x: hidden;
+  }
+  h2 { 
+    text-align:center; 
+    color:#58cc02; 
+    font-family:'Baloo 2', cursive; 
+  }
+  .item-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 20px;
+    margin: 20px auto;
+    padding: 0 15px;
+    max-width: 1200px;
+    box-sizing: border-box;
+  }
+  .item-card {
+    background: white;
+    padding: 15px;
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    cursor: pointer;
+    transition: transform 0.2s;
+  }
+  .item-card:hover {
+    transform: translateY(-4px);
+  }
+  .item-card div { margin: 5px 0; }
+  .speak-btn {
+    background: linear-gradient(to right,#58cc02,#1cb0f6);
+    border: none; 
+    color: white; 
+    padding: 6px 12px;
+    border-radius: 50px; 
+    cursor: pointer;
+    font-size: 0.9rem; 
+    font-family: 'Baloo 2', cursive;
+  }
+  .speak-btn:hover { opacity: 0.9; }
+  .btn {
+    background: linear-gradient(to right,#58cc02,#1cb0f6);
+    border: none; 
+    color: white; 
+    padding: 8px 20px; 
+    border-radius: 50px;
+    font-family: 'Baloo 2', cursive; 
+    cursor: pointer; 
+    margin: 10px 5px;
+  }
+  .btn:active { transform: scale(0.96); }
+  @media (max-width: 900px) {
+    .item-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+  @media (max-width: 600px) {
+    .item-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+  <button onclick="goBack()" class="btn">Back</button>
+  <h2 id="categoryTitle"></h2>
+  <div id="content" class="item-grid"></div>
+
+<script>
+// ===== PAGE-SPECIFIC DATA AND FUNCTIONS =====
+
+const DATA = {
+  fruits: [
+    {name: "Apple", icon: "🍎"}, {name: "Banana", icon: "🍌"}, {name: "Orange", icon: "🍊"},
+    {name: "Mango", icon: "🥭"}, {name: "Grapes", icon: "🍇"}, {name: "Pineapple", icon: "🍍"},
+    {name: "Strawberry", icon: "🍓"}, {name: "Watermelon", icon: "🍉"}, {name: "Cherry", icon: "🍒"},
+    {name: "Peach", icon: "🍑"},
+    
+    // VALID emoji fruits
+    {name: "Kiwi", icon: "🥝"},
+    {name: "Lemon", icon: "🍋"},
+    {name: "Coconut", icon: "🥥"},
+    {name: "Avocado", icon: "🥑"},
+    {name: "Pear", icon: "🍐"}
+  ],
+
+  vegetables: [
+    {name: "Carrot", icon: "🥕"}, {name: "Potato", icon: "🥔"}, {name: "Tomato", icon: "🍅"},
+    {name: "Cabbage", icon: "🥬"}, {name: "Corn", icon: "🌽"}, {name: "Onion", icon: "🧅"},
+    {name: "Garlic", icon: "🧄"}, {name: "Broccoli", icon: "🥦"}, {name: "Cucumber", icon: "🥒"},
+    {name: "Pepper", icon: "🌶️"},
+
+    // VALID vegetable emojis
+    {name: "Mushroom", icon: "🍄"},
+    {name: "Sweet Potato", icon: "🍠"},
+    {name: "Brinjal", icon: "🍆"}
+  ],
+
+  animals: [
+    {name: "Lion", icon: "🦁"}, {name: "Tiger", icon: "🐯"}, {name: "Elephant", icon: "🐘"},
+    {name: "Dog", icon: "🐶"}, {name: "Cat", icon: "🐱"}, {name: "Horse", icon: "🐴"},
+    {name: "Monkey", icon: "🐵"}, {name: "Cow", icon: "🐄"}, {name: "Rabbit", icon: "🐇"},
+    {name: "Sheep", icon: "🐑"},
+
+    // VALID animal emojis
+    {name: "Fox", icon: "🦊"},
+    {name: "Panda", icon: "🐼"},
+    {name: "Kangaroo", icon: "🦘"},
+    {name: "Zebra", icon: "🦓"},
+    {name: "Giraffe", icon: "🦒"},
+    {name: "Bear", icon: "🐻"},
+    {name: "Koala", icon: "🐨"},
+    {name: "Camel", icon: "🐪"},
+    {name: "Bat", icon: "🦇"},
+    {name: "Turtle", icon: "🐢"}
+  ],
+
+  birds: [
+    {name: "Parrot", icon: "🦜"}, {name: "Crow", icon: "🐦"}, {name: "Peacock", icon: "🦚"},
+    {name: "Sparrow", icon: "🐤"}, {name: "Owl", icon: "🦉"}, {name: "Penguin", icon: "🐧"},
+    {name: "Duck", icon: "🦆"}, {name: "Eagle", icon: "🦅"}, {name: "Dove", icon: "🕊️"},
+    {name: "Flamingo", icon: "🦩"},
+
+    // VALID bird emojis
+    {name: "Swan", icon: "🦢"},
+    {name: "Turkey", icon: "🦃"},
+    {name: "Rooster", icon: "🐓"},
+    {name: "Hen", icon: "🐔"}
+  ],
+
+  vehicles: [
+    {name: "Car", icon: "🚗"}, {name: "Bus", icon: "🚌"}, {name: "Train", icon: "🚆"},
+    {name: "Airplane", icon: "✈️"}, {name: "Bike", icon: "🚲"}, {name: "Truck", icon: "🚚"},
+    {name: "Ship", icon: "🚢"}, {name: "Helicopter", icon: "🚁"}, {name: "Taxi", icon: "🚖"},
+    {name: "Tractor", icon: "🚜"},
+
+    // VALID vehicle emojis
+    {name: "Scooter", icon: "🛵"},
+    {name: "Ambulance", icon: "🚑"},
+    {name: "Fire Truck", icon: "🚒"},
+    {name: "Police Car", icon: "🚓"},
+    {name: "Subway", icon: "🚇"},
+    {name: "Rocket", icon: "🚀"},
+    {name: "Van", icon: "🚐"},
+    {name: "Bullet Train", icon: "🚄"},
+    {name: "Sailboat", icon: "⛵"}
+  ],
+
+  colors: [
+    {name: "Red", icon: "🔴"}, {name: "Blue", icon: "🔵"}, {name: "Green", icon: "🟢"},
+    {name: "Yellow", icon: "🟡"}, {name: "Purple", icon: "🟣"}, {name: "Orange", icon: "🟠"},
+    {name: "Brown", icon: "🟤"}, {name: "Black", icon: "⚫"}, {name: "White", icon: "⚪"},
+    {name: "Pink", icon: "🌸"},
+
+  ]
+};
+
+
+// Track current category to prevent reloading same content
+let currentCategory = null;
+
+function getCategory(){
+  const urlParams = new URLSearchParams(window.location.search);
+  const category = urlParams.get("category");
+  console.log("Retrieved category from URL:", category);
+  return category;
+}
+
+function loadCategory(){
+  const cat = getCategory();
+  console.log("Loading category:", cat, "Current category:", currentCategory);
+  
+  // Only reload if category changed
+  if (cat === currentCategory) {
+    console.log("Same category, no reload needed");
+    return;
+  }
+  
+  currentCategory = cat;
+  
+  if (!cat || !DATA[cat]) {
+    console.error("Category not found:", cat);
+    document.getElementById("content").innerHTML = "<p>Category not found.</p>";
+    return;
+  }
+  const items = DATA[cat];
+
+  document.getElementById("categoryTitle").textContent = `Category: ${cat.charAt(0).toUpperCase() + cat.slice(1)}`;
+  
+  document.getElementById("content").innerHTML = items.map((item, index) => `
+    <div class="item-card" onclick="speak('${item.name}', '${cat}', ${index})">
+      <div style="font-size:2rem;">${item.icon}</div>
+      <div style="font-weight:bold;">${item.name}</div>
+      <button class="speak-btn" onclick="event.stopPropagation(); speak('${item.name}', '${cat}', ${index})">🔊</button>
+    </div>
+  `).join("");
+  
+  console.log(`Loaded ${items.length} items for category: ${cat}`);
+}
+
+function speak(text, category, index){
+  console.log(`Speaking: ${text}, Category: ${category}, Index: ${index}`);
+  
+  if (typeof updateProgress === 'function') {
+    console.log("Calling updateProgress for:", category, index);
+    updateProgress('level2', category, index);
+  } else {
+    console.error("updateProgress function not found!");
+  }
+
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.lang = "en-US";
+  speechSynthesis.speak(utter);
+}
+
+function goBack(){
+  window.location.href = "english.html";
+}
+
+// Force reload when page is shown (for back/forward navigation)
+function handleVisibilityChange() {
+  if (!document.hidden) {
+    console.log("Page became visible, checking if reload is needed");
+    loadCategory();
+  }
+}
+
+// ===== INITIALIZATION =====
+document.addEventListener('DOMContentLoaded', function() {
+  console.log("Level 2 page loaded");
+  
+  // Add visibility change listener
+  document.addEventListener('visibilitychange', handleVisibilityChange);
+  
+  // Add page show listener (for back/forward cache)
+  window.addEventListener('pageshow', function(event) {
+    console.log("Page show event, persisted:", event.persisted);
+    if (event.persisted) {
+      loadCategory();
+    }
+  });
+  
+  if (typeof initProgress === 'function') {
+    initProgress();
+  }
+  loadCategory();
+});
+
+// Also load category when window loads (as backup)
+window.addEventListener('load', function() {
+  console.log("Window load event");
+  loadCategory();
+});
+</script>
+
+<script src="progress.js"></script>
+<script src="script.js"></script>
+
+</body>
+</html>

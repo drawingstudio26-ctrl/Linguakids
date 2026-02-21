@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#58CC02">
+  <title>LinguaKids - Chinese Progress & Achievements</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700&family=Quicksand:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Quicksand', Arial, sans-serif;
+      background: linear-gradient(135deg,#e0eaff 0%,#f6f0ff 100%);
+      margin:0;padding:0;
+      min-height: 100vh;
+    }
+    #app { max-width:1000px; margin:auto; padding:15px; }
+    h2 { text-align:center; color:#58cc02; font-family:'Baloo 2',cursive; }
+    
+    .dashboard {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      margin: 20px 0;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+    }
+    
+    .streak-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+    
+    .streak-box {
+      background: linear-gradient(to right,#ff9a00,#ff6a00);
+      color: white;
+      padding: 10px 20px;
+      border-radius: 50px;
+      font-family:'Baloo 2',cursive;
+      font-size: 1.2rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .progress-section {
+      margin: 20px 0;
+    }
+    
+    .progress-bar {
+      height: 20px;
+      background: #f0f0f0;
+      border-radius: 10px;
+      margin: 10px 0;
+      overflow: hidden;
+    }
+    
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(to right,#58cc02,#1cb0f6);
+      border-radius: 10px;
+      width: 0%;
+      transition: width 0.5s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 0.8rem;
+      font-weight: bold;
+    }
+    
+    .achievements-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      gap: 15px;
+      margin-top: 20px;
+    }
+    
+    .achievement-card {
+      background: white;
+      padding: 15px;
+      border-radius: 12px;
+      text-align: center;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+      transition: 0.3s;
+    }
+    
+    .achievement-card.locked {
+      filter: grayscale(1);
+      opacity: 0.7;
+    }
+    
+    .achievement-icon {
+      font-size: 2rem;
+      margin-bottom: 10px;
+    }
+    
+    .achievement-title {
+      font-weight: bold;
+      font-size: 0.9rem;
+    }
+    
+    .achievement-desc {
+      font-size: 0.8rem;
+      color: #666;
+    }
+    
+    .btn {
+      background:linear-gradient(to right,#58cc02,#1cb0f6);
+      border:none; color:white; padding:8px 20px; border-radius:50px;
+      font-family:'Baloo 2',cursive; cursor:pointer; margin:10px 5px;
+    }
+    .btn:active { transform:scale(0.96); }
+    
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #58cc02;
+      color: white;
+      padding: 15px 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transform: translateY(100px);
+      opacity: 0;
+      transition: transform 0.3s, opacity 0.3s;
+    }
+    
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    
+    @media(max-width:600px){
+      .achievements-grid {
+        grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+      }
+    }
+    
+    /* Custom Modal Styles */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 2000;
+    }
+
+    .modal-content {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+      max-width: 90%;
+      width: 400px;
+      text-align: center;
+      font-family: 'Quicksand', sans-serif;
+    }
+
+    .modal-content p {
+      font-size: 1.1rem;
+      margin-bottom: 25px;
+      color: #333;
+    }
+
+    .modal-actions .btn {
+      padding: 10px 20px;
+      font-size: 1rem;
+      margin: 0 10px;
+    }
+
+    .btn-danger {
+      background: linear-gradient(to right, #ff6b6b, #ff5252);
+    }
+  </style>
+</head>
+<body>
+<div id="app">
+  <div style="text-align:left; margin-bottom:10px;">
+    <button id="globalBack" class="btn" onclick="window.location.href='chinese.html'">返回 Back</button>
+  </div>
+  
+  <h2>My Progress</h2>
+  
+  <div class="dashboard">
+    <div class="streak-container">
+      <div class="streak-box">
+        <i class="fas fa-fire"></i>
+        <span id="streakCount">0</span> Day Streak
+      </div>
+    </div>
+    
+    <div class="progress-section">
+      <h3>Level Progress</h3>
+      <div>
+        <span>Level 1: Pinyin & Numbers</span>
+        <div class="progress-bar">
+          <div class="progress-fill" id="level1Progress"></div>
+        </div>
+      </div>
+      <div>
+        <span>Level 2: Basic Words</span>
+        <div class="progress-bar">
+          <div class="progress-fill" id="level2Progress"></div>
+        </div>
+      </div>
+      <div>
+        <span>Level 3: Sentences & Expressions</span>
+        <div class="progress-bar">
+          <div class="progress-fill" id="level3Progress"></div>
+        </div>
+      </div>
+      <div>
+        <span>Games</span>
+        <div class="progress-bar">
+          <div class="progress-fill" id="gamesProgress"></div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="progress-section">
+      <h3>Achievements</h3>
+      <div class="achievements-grid" id="achievementsContainer">
+        </div>
+    </div>
+  </div>
+  
+  <div style="text-align: center; margin-top: 20px;">
+    <button class="btn" onclick="loadChineseHome()">Continue Learning</button>
+    <button class="btn btn-danger" onclick="resetProgress()">Reset Progress</button>
+  </div>
+</div>
+
+<div id="achievementToast" class="toast">
+  <i class="fas fa-trophy"></i>
+  <div>
+    <div id="toastTitle">成就解锁! Achievement Unlocked!</div>
+    <div id="toastDesc">You've earned a new badge.</div>
+  </div>
+</div>
+
+<!-- Custom Reset Confirmation Modal -->
+<div id="customResetModal" class="modal-overlay">
+  <div class="modal-content">
+    <p id="modalMessage">All your progress will be reset. Are you sure you want to continue?</p>
+    <div class="modal-actions">
+      <button class="btn btn-danger" onclick="performReset()">Yes</button>
+      <button class="btn" onclick="document.getElementById('customResetModal').style.display='none'">No</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// Progress display functions (kept here since they're specific to this page)
+function displayProgress() {
+  const progress = JSON.parse(localStorage.getItem(CHINESE_PROGRESS_KEY));
+  
+  if (!progress) {
+    initChineseProgress();
+    return;
+  }
+  
+  // Level 1 Progress (Pinyin & Numbers)
+  const initialsProgress = progress.level1.initials.completed / progress.level1.initials.total;
+  const finalsProgress = progress.level1.finals.completed / progress.level1.finals.total;
+  const numbersProgress = progress.level1.numbers.completed / progress.level1.numbers.total;
+  const level1TotalProgress = (initialsProgress + finalsProgress + numbersProgress) / 3 * 100;
+  document.getElementById('level1Progress').style.width = level1TotalProgress + '%';
+  document.getElementById('level1Progress').textContent = Math.round(level1TotalProgress) + '%';
+  
+  // Level 2 Progress (Basic Words)
+  const level2Categories = Object.keys(progress.level2);
+  const level2ProgressSum = level2Categories.reduce((sum, cat) => {
+    return sum + (progress.level2[cat].completed / progress.level2[cat].total);
+  }, 0);
+  const level2TotalProgress = (level2ProgressSum / level2Categories.length) * 100;
+  document.getElementById('level2Progress').style.width = level2TotalProgress + '%';
+  document.getElementById('level2Progress').textContent = Math.round(level2TotalProgress) + '%';
+  
+  // Level 3 Progress (Sentences & Expressions)
+  const level3Categories = Object.keys(progress.level3);
+  const level3ProgressSum = level3Categories.reduce((sum, cat) => {
+    return sum + (progress.level3[cat].completed / progress.level3[cat].total);
+  }, 0);
+  const level3TotalProgress = (level3ProgressSum / level3Categories.length) * 100;
+  document.getElementById('level3Progress').style.width = level3TotalProgress + '%';
+  document.getElementById('level3Progress').textContent = Math.round(level3TotalProgress) + '%';
+  
+  // Games Progress
+  const games = Object.values(progress.games);
+  const gamesPlayed = games.filter(game => game.completed > 0).length;
+  const gamesTotalProgress = (gamesPlayed / games.length) * 100;
+  document.getElementById('gamesProgress').style.width = gamesTotalProgress + '%';
+  document.getElementById('gamesProgress').textContent = Math.round(gamesTotalProgress) + '%';
+
+  // Update Streak Count
+  document.getElementById('streakCount').textContent = progress.streak.count;
+  
+  displayAchievements(progress.achievements);
+}
+
+function displayAchievements(achievements) {
+  const achievementsData = [
+    { id: 'firstSteps', icon: 'fa-baby', title: 'First Steps', desc: 'Complete your first Chinese activity', color: '#FF6B6B' },
+    { id: 'initialMaster', icon: 'fa-font', title: 'Initials Master', desc: 'Learn all Chinese initials', color: '#4ECDC4' },
+    { id: 'finalMaster', icon: 'fa-language', title: 'Finals Master', desc: 'Learn all Chinese finals', color: '#FFD166' },
+    { id: 'numberWhiz', icon: 'fa-calculator', title: 'Number Whiz', desc: 'Learn 50 Chinese numbers', color: '#06D6A0' },
+    { id: 'wordExpert', icon: 'fa-book', title: 'Word Expert', desc: 'Master 3 Chinese word categories', color: '#118AB2' },
+    { id: 'sentenceBuilder', icon: 'fa-comment', title: 'Sentence Builder', desc: 'Complete Level 3', color: '#EF476F' },
+    { id: 'gameChampion', icon: 'fa-gamepad', title: 'Game Champion', desc: 'Play all Chinese games', color: '#FF9E00' },
+    { id: 'weekStreak', icon: 'fa-fire', title: '7-Day Streak', desc: 'Practice Chinese for 7 consecutive days', color: '#FF5400' },
+    { id: 'monthStreak', icon: 'fa-fire', title: '30-Day Streak', desc: 'Practice Chinese for 30 consecutive days', color: '#FF0000' }
+  ];
+  
+  const container = document.getElementById('achievementsContainer');
+  container.innerHTML = achievementsData.map(ach => `
+    <div class="achievement-card ${achievements[ach.id] ? '' : 'locked'}">
+      <div class="achievement-icon" style="color: ${ach.color}">
+        <i class="fas ${ach.icon}"></i>
+      </div>
+      <div class="achievement-title">${ach.title}</div>
+      <div class="achievement-desc">${ach.desc}</div>
+    </div>
+  `).join('');
+}
+
+function loadChineseHome() {
+  window.location.href = "chinese.html";
+}
+
+// Custom modal functions
+function resetProgress() {
+  // Show the custom modal instead of a native alert/confirm
+  document.getElementById('customResetModal').style.display = 'flex';
+}
+
+function performReset() {
+  // 1. Clear the local storage and session storage
+  localStorage.removeItem(CHINESE_PROGRESS_KEY);
+  sessionStorage.clear();
+  
+  // 2. Hide the modal
+  document.getElementById('customResetModal').style.display = 'none';
+
+  // 3. Re-initialize the app state
+  initChineseProgress();
+  displayProgress();
+  
+  // 4. Show success toast 
+  showAchievementToast("Progress Reset!", "Your data has been cleared.");
+}
+
+// Initialize the progress page
+document.addEventListener('DOMContentLoaded', function() {
+  // Ensure progress system is initialized
+  if (typeof initChineseProgress === 'function') {
+    initChineseProgress();
+  }
+  displayProgress();
+});
+</script>
+<script src="script.js"></script>
+<script src="chprogress.js"></script>
+
+</body>
+</html>

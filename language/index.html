@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- PWA Manifest -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#58CC02">
+    <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+
+  <title>LinguaKids - Language Learning for Children</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #e0eaff 0%, #f6f0ff 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .container {
+      text-align: center;
+      background: white;
+      padding: 40px;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    
+    .logo {
+      font-size: 3rem;
+      color: #58cc02;
+      margin-bottom: 20px;
+    }
+    
+    .btn {
+      background: linear-gradient(to right, #58cc02, #1cb0f6);
+      color: white;
+      border: none;
+      padding: 15px 30px;
+      border-radius: 50px;
+      font-size: 1.2rem;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">
+      <i class="fas fa-language"></i>
+    </div>
+    <h1>Welcome to LinguaKids!</h1>
+    <p>Language Learning Adventure for Kids Ages 2-10</p>
+    <button class="btn" onclick="window.location.href='welcome.html'">
+      Start Learning Journey
+    </button>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+  <script src="script.js"></script>
+
+</body>
+</html>

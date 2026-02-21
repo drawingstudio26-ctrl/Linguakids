@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#58CC02">
+  <title>LinguaKids - Games</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700&family=Quicksand:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Quicksand', Arial, sans-serif;
+      background: linear-gradient(135deg,#e0eaff 0%,#f6f0ff 100%);
+      margin:0;
+      padding:0;
+      text-align:center;
+      min-height: 100vh;
+      padding-bottom: 20px;
+    }
+    
+    h2 { 
+      color:#58cc02; 
+      font-family:'Baloo 2',cursive; 
+      margin-top:20px; 
+      font-size: clamp(1.5rem, 5vw, 2.2rem);
+      padding: 0 10px;
+    }
+    
+    .btn {
+      background:linear-gradient(to right,#58cc02,#1cb0f6);
+      border:none; 
+      color:white; 
+      padding:12px 20px; 
+      border-radius:50px;
+      font-family:'Baloo 2',cursive; 
+      cursor:pointer; 
+      margin:10px 5px;
+      font-size: 1rem;
+      min-height: 44px; /* Minimum touch target size */
+      min-width: 44px; /* Minimum touch target size */
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .btn:active { 
+      transform:scale(0.96); 
+    }
+    
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    
+    .game-container {
+      max-width:600px; 
+      margin:20px auto; 
+      padding:15px;
+      background:white; 
+      border-radius:12px; 
+      box-shadow:0 4px 8px rgba(0,0,0,0.05);
+      width: 95%;
+    }
+    
+    .sub-container {
+      display:grid; 
+      grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+      gap:15px; 
+      margin-top:20px;
+    }
+    
+    .sub-card {
+      background:white; 
+      padding:20px; 
+      border-radius:12px;
+      box-shadow:0 4px 8px rgba(0,0,0,0.05); 
+      cursor:pointer;
+      transition:0.3s; 
+      word-wrap:break-word; 
+      overflow-wrap:break-word;
+      min-height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 1.1rem;
+    }
+    
+    .sub-card:hover { 
+      transform:translateY(-5px); 
+      box-shadow:0 8px 15px rgba(0,0,0,0.1); 
+    }
+    
+    .lesson-controls {
+      margin-top: 10px;
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    
+    .completion-message {
+      background: #e8f5e9;
+      border-radius: 12px;
+      padding: 20px;
+      margin: 20px 0;
+      border: 2px solid #58cc02;
+    }
+    
+    /* Mobile-specific styles */
+    @media (max-width: 480px) {
+      .game-container {
+        padding: 10px;
+        margin: 10px auto;
+      }
+      
+      .sub-container {
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+      
+      .sub-card {
+        padding: 15px;
+        min-height: 70px;
+        font-size: 1rem;
+      }
+      
+      .btn {
+        padding: 10px 15px;
+        font-size: 0.9rem;
+        margin: 5px;
+      }
+      
+      #pictures, #words {
+        flex-direction: column;
+        align-items: center;
+      }
+      
+      .drop-zone, .draggable-word {
+        margin: 5px 0;
+        width: 100%;
+        max-width: 200px;
+      }
+    }
+    
+    /* Match game specific styles */
+    .drop-zone {
+      font-size: 2rem;
+      border: 2px dashed #ccc;
+      border-radius: 10px;
+      padding: 10px;
+      min-height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 5px;
+      transition: all 0.3s;
+    }
+    
+    .draggable-word {
+      padding: 10px 15px;
+      margin: 5px;
+      cursor: grab;
+      user-select: none;
+      transition: all 0.3s;
+    }
+    
+    .draggable-word:active {
+      cursor: grabbing;
+    }
+    
+    /* Touch-friendly styles for drag and drop */
+    @media (hover: none) and (pointer: coarse) {
+      .draggable-word {
+        padding: 15px 20px; /* Larger touch targets */
+      }
+    }
+    
+    /* Apple counting game styles */
+    #apple-options {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 15px;
+    }
+    
+    /* Options container for fill-in-blanks */
+    #options-container {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 15px 0;
+    }
+    
+    /* Result messages */
+    #fillResult, #matchResult, #appleResult {
+      margin-top: 15px;
+      font-weight: bold;
+      font-size: 1.1rem;
+      min-height: 24px;
+    }
+  </style>
+</head>
+<body>
+
+  <button class="btn" onclick="goBack()">Back</button>
+  <h2 id="game-title">Spiel (Game)</h2>
+  <div id="game-content" class="game-container"></div>
+
+<script>
+  const gameTitle = document.getElementById("game-title");
+  const gameContent = document.getElementById("game-content");
+
+  // === Helper: Go back to German home page ===
+  function goBack(){
+    window.location.href = "german.html";
+  }
+
+  // === Get URL parameter ===
+  function getQueryParam(name) {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get(name);
+  }
+  
+  // === Data for games ===
+  const GERMAN_NUMBERS = {
+    1: "Eins", 2: "Zwei", 3: "Drei", 4: "Vier", 5: "Fünf", 
+    6: "Sechs", 7: "Sieben", 8: "Acht", 9: "Neun", 10: "Zehn"
+  };
+
+  const fillQuestions = [
+    { sentence: "Ich habe einen ___ 🐶", options: ["Katze", "Hund", "Fisch"], answer: "Hund" },
+    { sentence: "Die ___ 🐱 schläft", options: ["Katze", "Hund", "Löwe"], answer: "Katze" },
+    { sentence: "Ich esse gerne ___ 🍎", options: ["Apfel", "Banane", "Orange"], answer: "Apfel" },
+    { sentence: "Der ___ 🌳 ist groß", options: ["Baum", "Blume", "Gras"], answer: "Baum" },
+    { sentence: "Ich trinke ___ 💧", options: ["Milch", "Wasser", "Saft"], answer: "Wasser" },
+    { sentence: "Der ___ 🦁 brüllt", options: ["Löwe", "Tiger", "Hund"], answer: "Löwe" },
+    { sentence: "Sie trägt ein ___ 👗", options: ["Hut", "Kleid", "Schuhe"], answer: "Kleid" },
+    { sentence: "Die Sonne geht im ___ ☀️ auf", options: ["Osten", "Westen", "Norden"], answer: "Osten" },
+    { sentence: "Ich putze meine ___ 🦷", options: ["Haare", "Zähne", "Hände"], answer: "Zähne" },
+    { sentence: "Der ___ 🐸 hüpft", options: ["Frosch", "Katze", "Hund"], answer: "Frosch" }
+  ];
+  let currentQuestion = 0;
+  let correctAnswers = 0;
+
+  // === Show Fill in the blanks question ===
+  function showFillQuestion(index){
+    if (index >= fillQuestions.length) {
+        showFinalScore('fill-blanks', correctAnswers, fillQuestions.length);
+        return;
+    }
+    
+    const q = fillQuestions[index];
+    gameContent.innerHTML = `
+      <p style="font-size: 1.2rem;">Complete the sentence:</p>
+      <p style="font-size: 1.5rem; margin: 15px 0;">${q.sentence}</p>
+      <div id="options-container"></div>
+      <p id="fillResult"></p>
+      <div class="lesson-controls">
+        <button class="btn" onclick="prevQuestion()" ${index === 0 ? "disabled" : ""}>Previous</button>
+        <button class="btn" onclick="nextQuestion()" ${index === fillQuestions.length-1 ? "disabled" : ""}>Next</button>
+      </div>
+    `;
+
+    const optionsContainer = document.getElementById("options-container");
+    q.options.forEach(opt => {
+      const btn = document.createElement("button");
+      btn.className = "btn";
+      btn.textContent = opt;
+      btn.onclick = () => checkFill(opt);
+      optionsContainer.appendChild(btn);
+    });
+  }
+
+  function checkFill(selected){
+    const q = fillQuestions[currentQuestion];
+    const res = document.getElementById("fillResult");
+    
+    if(selected.toLowerCase() === q.answer.toLowerCase()) {
+      res.textContent = "✅ Richtig! (Correct!)";
+      res.style.color = '#58cc02';
+      correctAnswers++;
+    } else {
+      res.textContent = "❌ Versuche es nochmal! (Try again!)";
+      res.style.color = '#ff5252';
+    }
+    
+    // Auto-advance after check
+    setTimeout(() => {
+        currentQuestion++;
+        if (currentQuestion < fillQuestions.length) {
+            showFillQuestion(currentQuestion);
+        } else {
+            showFinalScore('fill-blanks', correctAnswers, fillQuestions.length);
+        }
+    }, 1500);
+  }
+  
+  function nextQuestion(){
+    currentQuestion++;
+    if (currentQuestion < fillQuestions.length) {
+        showFillQuestion(currentQuestion);
+    } else {
+        showFinalScore('fill-blanks', correctAnswers, fillQuestions.length);
+    }
+  }
+
+  function prevQuestion(){
+    if(currentQuestion > 0){
+      currentQuestion--;
+      showFillQuestion(currentQuestion);
+    }
+  }
+
+  // === Navigate to a specific game ===
+  function goToGame(game){
+    window.location.href = "grgames.html?game=" + game;
+  }
+  
+  // Helper to shuffle arrays
+  function shuffleArray(array){
+    return array.sort(() => Math.random() - 0.5);
+  }
+
+  // === Load the game or menu ===
+  function loadGame(){
+    const gameType = getQueryParam('game');
+
+    if(!gameType){
+      gameTitle.textContent = "Spiele Menü (Games Menu)";
+      gameContent.innerHTML = `
+        <div class="sub-container">
+          <div class="sub-card" onclick="goToGame('fill-blanks')">Fill in the blanks</div>
+          <div class="sub-card" onclick="goToGame('match-words')">Match words</div>
+          <div class="sub-card" onclick="goToGame('count-apples')">Count the apples</div>
+        </div>
+      `;
+      return;
+    }
+
+    switch(gameType){
+      case 'fill-blanks':
+        gameTitle.textContent = "Fill in the blanks";
+        currentQuestion = 0;
+        correctAnswers = 0;
+        showFillQuestion(currentQuestion);
+        break;
+
+      case 'match-words':
+        gameTitle.textContent = "Match words with pictures";
+        // Logic for this game would go here...
+        alert("Match words game not implemented yet.");
+        goBack();
+        break;
+
+      case 'count-apples':
+        gameTitle.textContent = "Zähle die Äpfel (Count the apples)";
+        let appleCorrectAnswers = 0;
+        const totalAppleQuestions = 5;
+
+        function startAppleGame(){
+          if (currentQuestion >= totalAppleQuestions) {
+             showFinalScore('count-apples', appleCorrectAnswers, totalAppleQuestions);
+             return;
+          }
+            
+          const appleCount = Math.floor(Math.random() * 10) + 1;
+          const emojis = "🍎".repeat(appleCount);
+
+          // Generate 4 unique options including the correct answer
+          const options = new Set([appleCount]);
+          while (options.size < 4) {
+            options.add(Math.floor(Math.random() * 10) + 1);
+          }
+          const shuffledOptions = shuffleArray(Array.from(options));
+
+          gameContent.innerHTML = `
+            <p style="font-size: 1.2rem;">How many apples are there? (Question ${currentQuestion + 1}/${totalAppleQuestions})</p>
+            <p style="font-size:2.5rem; margin: 20px 0;">${emojis}</p>
+            <div id="apple-options"></div>
+            <p id="appleResult"></p>
+          `;
+
+          const optionsContainer = document.getElementById("apple-options");
+          shuffledOptions.forEach(opt => {
+            if (GERMAN_NUMBERS[opt]) { // Check if number is in our map
+                const btn = document.createElement("button");
+                btn.className = "btn";
+                btn.textContent = GERMAN_NUMBERS[opt]; // Display the German word
+                btn.onclick = () => checkAppleAnswer(opt, appleCount); // Pass the numeric value for checking
+                optionsContainer.appendChild(btn);
+            }
+          });
+        }
+
+        function checkAppleAnswer(selected, correct){
+          const res = document.getElementById("appleResult");
+          document.querySelectorAll('#apple-options .btn').forEach(btn => btn.disabled = true); // Disable options
+
+          if(selected === correct){
+            res.textContent = `✅ Richtig! (Correct!)`;
+            res.style.color = '#58cc02';
+            appleCorrectAnswers++;
+          } else {
+            res.textContent = `❌ Falsch! The correct answer is ${GERMAN_NUMBERS[correct]}.`;
+            res.style.color = '#ff5252';
+          }
+          
+          setTimeout(() => {
+            currentQuestion++;
+            startAppleGame();
+          }, 2000);
+        }
+
+        currentQuestion = 0;
+        startAppleGame();
+        break;
+
+      default:
+        gameTitle.textContent = "Game not found";
+        gameContent.innerHTML = `<p>Sorry, this game is not available yet.</p>`;
+    }
+  }
+
+  // === Consolidated Final Score Function ===
+  function showFinalScore(gameKey, finalScore, totalQuestions) {
+    if (typeof updateProgress === 'function') {
+        // Track progress once the game set is completed.
+        // The number of "correct" items to log is based on the final score.
+        updateProgress('games', gameKey, finalScore);
+    }
+
+    gameContent.innerHTML = `
+      <div class="completion-message">
+        <h3 style="color:#58cc02; margin-top:0;">🎉 Herzlichen Glückwunsch! (Congratulations!) 🎉</h3>
+        <p>You completed the game!</p>
+        <p>Final Score: ${finalScore} out of ${totalQuestions} correct.</p>
+        <button class="btn" onclick="goBack()">Back to Menu</button>
+        <button class="btn" onclick="goToGame('${gameKey}')">Play Again</button>
+      </div>
+    `;
+  }
+  
+  // Initialize the correct game on page load
+  loadGame();
+</script>
+<script src="grprogress.js"></script>
+<script src="script.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#58CC02">
+  <title>LinguaKids - English</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700&family=Quicksand:wght@400;500;600&display=swap" rel="stylesheet">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <style>
+    body {
+      font-family: 'Quicksand', Arial, sans-serif;
+      background: linear-gradient(135deg,#e0eaff 0%,#f6f0ff 100%);
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+    }
+    #app { 
+      max-width: 1000px; 
+      margin: auto; 
+      padding: 15px; 
+      padding-top: 70px;
+    }
+    h2 { 
+      text-align: center; 
+      color: #58cc02; 
+      font-family: 'Baloo 2', cursive; 
+    }
+    .sub-container, .letters-grid, .numbers-grid {
+      display: grid; 
+      grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+      gap: 15px; 
+      margin-top: 20px;
+    }
+    .sub-card, .letter-card, .number-card {
+      background: white; 
+      padding: 15px; 
+      border-radius: 12px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.05); 
+      text-align: center;
+      cursor: pointer; 
+      transition: 0.3s;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+    .sub-card:hover, .letter-card:hover, .number-card:hover {
+      transform: translateY(-5px); 
+      box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+    }
+    .main-char { font-size: 2rem; font-weight: bold; color: #58cc02; }
+    .small-char { font-size: 1.2rem; color: #1cb0f6; }
+    .example { margin-top: 5px; font-size: 1rem; }
+    .spelling { margin-top: 3px; font-size: 0.8rem; color: #666; font-style: italic; }
+    .btn {
+      background: linear-gradient(to right, #58cc02, #1cb0f6);
+      border: none; color: white; padding: 8px 20px; 
+      border-radius: 50px; font-family: 'Baloo 2', cursive; 
+      cursor: pointer; margin: 10px 5px; display: inline-block;
+    }
+    .btn:active { transform: scale(0.96); }
+    .lesson-controls { display: flex; justify-content: center; gap: 10px; margin-top: 15px; flex-wrap: wrap; }
+    canvas { border: 2px solid #ccc; border-radius: 12px; background: #fff; display: block; margin: 15px auto; }
+    .lesson-container { display: flex; flex-direction: column; align-items: center; text-align: center; margin-top: 20px; }
+    .lesson-container .main-char { font-size: 3rem; }
+    .lesson-container .example { font-size: 1.3rem; margin: 10px 0; }
+    .lesson-container .spelling { font-size: 1.1rem; margin: 5px 0; color: #1cb0f6; font-weight: 500; }
+    .trace-area { display: flex; flex-direction: column; align-items: center; margin: 10px 0; }
+    .clear-btn { background: #ff6b6b; padding: 5px 15px; font-size: 0.9rem; border-radius: 8px; margin-top: 8px; }
+    .clear-btn:hover { background: #ff5252; }
+    .sub-card h3 { font-size: 1.1rem; margin: 5px 0; }
+    .sub-card p { font-size: 0.9rem; margin: 0; line-height: 1.2; }
+    .back-button-container { position: fixed; top: 15px; left: 15px; z-index: 1000; }
+    .sound-btn { background: #ff9f43; border: none; color: white; padding: 8px 15px; border-radius: 50px; cursor: pointer; margin: 5px; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 5px; }
+    .sound-btn:hover { background: #ff7f00; }
+    
+    @media (max-width: 600px) {
+      #app { padding-top: 60px; }
+      .sub-container { grid-template-columns: repeat(2, 1fr); }
+      .back-button-container { top: 10px; left: 10px; }
+    }
+  </style>
+</head>
+<body>
+<div id="app">
+  <div class="back-button-container">
+    <button id="globalBack" class="btn" onclick="goBack()">Back</button>
+  </div>
+  <div id="learning-content"></div>
+</div>
+
+<script>
+// ===== DATA CONSTANTS =====
+const LETTERS = [
+  {upper:"A", lower:"a", word:"Apple 🍎"}, {upper:"B", lower:"b", word:"Ball ⚽"},
+  {upper:"C", lower:"c", word:"Cat 🐱"}, {upper:"D", lower:"d", word:"Dog 🐶"},
+  {upper:"E", lower:"e", word:"Elephant 🐘"}, {upper:"F", lower:"f", word:"Fish 🐟"},
+  {upper:"G", lower:"g", word:"Goat 🐐"}, {upper:"H", lower:"h", word:"House 🏠"},
+  {upper:"I", lower:"i", word:"Ice cream 🍦"}, {upper:"J", lower:"j", word:"Jug 🏺"},
+  {upper:"K", lower:"k", word:"Kite 🪁"}, {upper:"L", lower:"l", word:"Lion 🦁"},
+  {upper:"M", lower:"m", word:"Monkey 🐵"}, {upper:"N", lower:"n", word:"Nest 🐣"},
+  {upper:"O", lower:"o", word:"Orange 🍊"}, {upper:"P", lower:"p", word:"Pencil ✏️"},
+  {upper:"Q", lower:"q", word:"Queen 👑"}, {upper:"R", lower:"r", word:"Rabbit 🐇"},
+  {upper:"S", lower:"s", word:"Sun ☀️"}, {upper:"T", lower:"t", word:"Tree 🌳"},
+  {upper:"U", lower:"u", word:"Umbrella ☂️"}, {upper:"V", lower:"v", word:"Violin 🎻"},
+  {upper:"W", lower:"w", word:"Water 💧"}, {upper:"X", lower:"x", word:"Xylophone 🎶"},
+  {upper:"Y", lower:"y", word:"Yacht ⛵"}, {upper:"Z", lower:"z", word:"Zebra 🦓"},
+];
+
+// Number spellings for 1-100
+const NUMBER_SPELLINGS = [
+  "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten",
+  "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen", "twenty",
+  "twenty-one", "twenty-two", "twenty-three", "twenty-four", "twenty-five", "twenty-six", "twenty-seven", "twenty-eight", "twenty-nine", "thirty",
+  "thirty-one", "thirty-two", "thirty-three", "thirty-four", "thirty-five", "thirty-six", "thirty-seven", "thirty-eight", "thirty-nine", "forty",
+  "forty-one", "forty-two", "forty-three", "forty-four", "forty-five", "forty-six", "forty-seven", "forty-eight", "forty-nine", "fifty",
+  "fifty-one", "fifty-two", "fifty-three", "fifty-four", "fifty-five", "fifty-six", "fifty-seven", "fifty-eight", "fifty-nine", "sixty",
+  "sixty-one", "sixty-two", "sixty-three", "sixty-four", "sixty-five", "sixty-six", "sixty-seven", "sixty-eight", "sixty-nine", "seventy",
+  "seventy-one", "seventy-two", "seventy-three", "seventy-four", "seventy-five", "seventy-six", "seventy-seven", "seventy-eight", "seventy-nine", "eighty",
+  "eighty-one", "eighty-two", "eighty-three", "eighty-four", "eighty-five", "eighty-six", "eighty-seven", "eighty-eight", "eighty-nine", "ninety",
+  "ninety-one", "ninety-two", "ninety-three", "ninety-four", "ninety-five", "ninety-six", "ninety-seven", "ninety-eight", "ninety-nine", "one hundred"
+];
+
+const NUMBERS = Array.from({length:100}, (_,i) => ({ 
+  digit: i+1, 
+  word: (i+1).toString(),
+  spelling: NUMBER_SPELLINGS[i]
+}));
+
+let currentView = 'level1';
+
+// ===== NAVIGATION AND VIEW FUNCTIONS =====
+function goBack() {
+  if (currentView === 'level1') {
+    window.location.href = 'welcome.html';
+  } else {
+    loadLevel1();
+  }
+}
+
+function loadLevel1(){
+  currentView = 'level1';
+  document.getElementById("learning-content").innerHTML = `
+    <h2>Progress Tracking</h2>
+    <div class="sub-container"><div class="sub-card" onclick="window.location.href='progress.html'"><h3>My Progress</h3><p>Track your learning journey</p></div></div>
+    <h2>Level 1: Alphabets & Numbers</h2>
+    <div class="sub-container"><div class="sub-card" onclick="loadAlphabetsMenu()"><h3>Alphabets</h3><p>Learn A–Z</p></div><div class="sub-card" onclick="loadNumbersMenu()"><h3>Numbers</h3><p>Learn 1–100</p></div></div>
+    <h2>Level 2: Basic Words</h2>
+    <div class="sub-container">
+      <div class="sub-card" onclick="goToLevel2('fruits')"><h3>Fruits</h3></div>
+      <div class="sub-card" onclick="goToLevel2('vegetables')"><h3>Vegetables</h3></div>
+      <div class="sub-card" onclick="goToLevel2('animals')"><h3>Animals</h3></div>
+      <div class="sub-card" onclick="goToLevel2('birds')"><h3>Birds</h3></div>
+      <div class="sub-card" onclick="goToLevel2('vehicles')"><h3>Vehicles</h3></div>
+      <div class="sub-card" onclick="goToLevel2('colors')"><h3>Colors</h3></div>
+    </div>
+    <h2>Level 3: Sentences</h2>
+    <div class="sub-container"><div class="sub-card" onclick="goToLevel3('greetings')"><h3>Greetings</h3></div><div class="sub-card" onclick="goToLevel3('activities')"><h3>Activities</h3></div><div class="sub-card" onclick="goToLevel3('questions')"><h3>Questions</h3></div></div>
+    <h2>Games</h2>
+    <div class="sub-container"><div class="sub-card" onclick="playGame('fill-blanks')"><h3>Fill in the blanks</h3></div><div class="sub-card" onclick="playGame('match-words')"><h3>Match words</h3></div><div class="sub-card" onclick="playGame('count-apples')"><h3>Count the apples</h3></div></div>
+  `;
+}
+
+function loadAlphabetsMenu(){
+  currentView = 'alphabets-menu';
+  document.getElementById("learning-content").innerHTML = `
+    <div class="letters-grid">
+      ${LETTERS.map((l, i) => `
+        <div class="letter-card" onclick="startAlphabetLesson(${i})">
+          <div class="main-char">${l.upper}</div>
+          <div class="small-char">${l.lower}</div>
+          <div class="example">${l.word}</div>
+        </div>`
+      ).join("")}
+    </div>`;
+}
+
+function startAlphabetLesson(index){
+  currentView = 'alphabet-lesson';
+  if (index < 0 || index >= LETTERS.length) { loadAlphabetsMenu(); return; }
+  const l = LETTERS[index];
+  
+  // Use the central progress system
+  if (typeof updateProgress === 'function') {
+    updateProgress('level1', 'alphabets', index);
+  }
+
+  document.getElementById("learning-content").innerHTML = `
+    <div class="lesson-container">
+      <div class="main-char">${l.upper} <span class="small-char">${l.lower}</span></div>
+      <div class="example">${l.word}</div>
+      <button class="sound-btn" onclick="speakText('${l.word}')"><i class="fas fa-volume-up"></i> Hear Word</button>
+      <div class="trace-area"><canvas id="traceCanvas" width="250" height="250"></canvas><button class="btn clear-btn" onclick="clearCanvas()">Clear</button></div>
+      <div class="lesson-controls">
+        <button class="btn" onclick="startAlphabetLesson(${index-1})">Previous</button>
+        <button class="btn" onclick="loadAlphabetsMenu()">Back to Letters</button>
+        <button class="btn" onclick="startAlphabetLesson(${index+1})">Next</button>
+      </div>
+    </div>`;
+  initCanvas();
+}
+
+function loadNumbersMenu(){
+  currentView = 'numbers-menu';
+  document.getElementById("learning-content").innerHTML = `
+    <div class="numbers-grid">
+      ${NUMBERS.map((n, i) => `
+        <div class="number-card" onclick="startNumberLesson(${i})">
+          <div class="main-char">${n.digit}</div>
+          <div class="spelling">${n.spelling}</div>
+        </div>`
+      ).join("")}
+    </div>`;
+}
+
+function startNumberLesson(index){
+  currentView = 'number-lesson';
+  if (index < 0 || index >= NUMBERS.length) { loadNumbersMenu(); return; }
+  const n = NUMBERS[index];
+  
+  // Use the central progress system
+  if (typeof updateProgress === 'function') {
+    updateProgress('level1', 'numbers', index);
+  }
+
+  document.getElementById("learning-content").innerHTML = `
+    <div class="lesson-container">
+      <div class="main-char">${n.digit}</div>
+      <div class="example">${n.word}</div>
+      <div class="spelling">${n.spelling}</div>
+      <button class="sound-btn" onclick="speakText('${n.spelling}')"><i class="fas fa-volume-up"></i> Hear Number</button>
+      <div class="trace-area"><canvas id="traceCanvas" width="250" height="250"></canvas><button class="btn clear-btn" onclick="clearCanvas()">Clear</button></div>
+      <div class="lesson-controls">
+        <button class="btn" onclick="startNumberLesson(${index-1})">Previous</button>
+        <button class="btn" onclick="loadNumbersMenu()">Back to Numbers</button>
+        <button class="btn" onclick="startNumberLesson(${index+1})">Next</button>
+      </div>
+    </div>`;
+  initCanvas();
+}
+
+// ===== UTILITY FUNCTIONS =====
+function speakText(text) {
+  const cleanText = text.replace(/[^a-zA-Z\s\-]/g, '').trim();
+  if ('speechSynthesis' in window) {
+    speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(cleanText);
+    utterance.rate = 0.8; // Slightly slower for better comprehension
+    speechSynthesis.speak(utterance);
+  }
+}
+
+function initCanvas(){
+  const canvas = document.getElementById("traceCanvas"), ctx = canvas.getContext("2d");
+  if (!canvas) return;
+  ctx.lineWidth=4; ctx.lineCap="round"; ctx.strokeStyle="#58cc02"; let drawing=false;
+  const getPos = e => ({ x:(e.clientX||e.touches[0].clientX)-canvas.getBoundingClientRect().left, y:(e.clientY||e.touches[0].clientY)-canvas.getBoundingClientRect().top });
+  const start = () => drawing=true;
+  const stop = () => { drawing=false; ctx.beginPath(); };
+  const draw = e => { if(!drawing) return; e.preventDefault(); const p=getPos(e); ctx.lineTo(p.x,p.y); ctx.stroke(); ctx.beginPath(); ctx.moveTo(p.x,p.y); };
+  canvas.addEventListener("mousedown", start); canvas.addEventListener("mouseup", stop); canvas.addEventListener("mousemove", draw);
+  canvas.addEventListener("touchstart", start); canvas.addEventListener("touchend", stop); canvas.addEventListener("touchmove", draw);
+}
+
+function clearCanvas() { 
+  const canvas = document.getElementById("traceCanvas");
+  if (canvas) {
+    canvas.getContext("2d").clearRect(0, 0, 250, 250); 
+  }
+}
+
+// ===== NAVIGATION FUNCTIONS =====
+function goToLevel2(cat) { 
+  const timestamp = new Date().getTime();
+  window.location.href = `englevel2.html?category=${cat}&t=${timestamp}`; 
+}
+
+function goToLevel3(cat) { 
+  const timestamp = new Date().getTime();
+  window.location.href = `englevel3.html?category=${cat}&t=${timestamp}`; 
+}
+
+function playGame(game) { 
+  const timestamp = new Date().getTime();
+  window.location.href = `engames.html?game=${game}&t=${timestamp}`; 
+}
+
+// ===== INITIALIZATION =====
+document.addEventListener('DOMContentLoaded', () => {
+    // Initialize progress system first
+    if (typeof initProgress === 'function') {
+        initProgress();
+    }
+    
+    // Load the main level view
+    loadLevel1();
+});
+</script>
+
+<script src="progress.js"></script>
+<script src="script.js"></script>
+
+</body>
+</html>

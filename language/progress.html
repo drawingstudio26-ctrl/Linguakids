@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#58CC02">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <title>LinguaKids - Progress</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700&family=Quicksand:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Quicksand', Arial, sans-serif; background: linear-gradient(135deg,#e0eaff 0%,#f6f0ff 100%); margin:0; padding:0; min-height: 100vh; }
+    #app { max-width:1000px; margin:auto; padding:15px; }
+    h2 { text-align:center; color:#58cc02; font-family:'Baloo 2',cursive; }
+    .dashboard { background: white; border-radius: 12px; padding: 20px; margin: 20px 0; box-shadow: 0 4px 8px rgba(0,0,0,0.05); }
+    .streak-container { display: flex; align-items: center; justify-content: center; margin-bottom: 20px; }
+    .streak-box { background: linear-gradient(to right,#ff9a00,#ff6a00); color: white; padding: 10px 20px; border-radius: 50px; font-family: 'Baloo 2', cursive; font-size: 1.2rem; display: flex; align-items: center; gap: 10px; }
+    .progress-section { margin: 20px 0; }
+    .progress-bar { height: 20px; background: #f0f0f0; border-radius: 10px; margin: 10px 0; overflow: hidden; }
+    .progress-fill { height: 100%; background: linear-gradient(to right,#58cc02,#1cb0f6); border-radius: 10px; width: 0%; transition: width 0.5s ease; text-align: center; color: white; font-weight: bold; font-size: 0.9rem; line-height: 20px; }
+    .achievements-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 15px; margin-top: 20px; }
+    .achievement-card { background: white; padding: 15px; border-radius: 12px; text-align: center; box-shadow: 0 4px 8px rgba(0,0,0,0.05); transition: 0.3s; border: 3px solid transparent; }
+    .achievement-card.unlocked { border-color: #58cc02; background: linear-gradient(135deg, #f8fff8 0%, #ffffff 100%); }
+    .achievement-card.locked { filter: grayscale(1); opacity: 0.6; background: #f5f5f5; }
+    .achievement-card.unlocked:hover { transform: translateY(-3px); box-shadow: 0 6px 12px rgba(0,0,0,0.1); }
+    .achievement-icon { font-size: 2rem; margin-bottom: 10px; }
+    .achievement-card.unlocked .achievement-icon { color: #58cc02; }
+    .achievement-card.locked .achievement-icon { color: #999; }
+    .achievement-title { font-weight: bold; font-size: 0.9rem; margin-bottom: 5px; }
+    .achievement-desc { font-size: 0.75rem; color: #666; line-height: 1.2; }
+    .btn { background:linear-gradient(to right,#58cc02,#1cb0f6); border:none; color:white; padding:8px 20px; border-radius:50px; font-family:'Baloo 2',cursive; cursor:pointer; margin:10px 5px; }
+    .btn:active { transform:scale(0.96); }
+    .btn-danger { background: linear-gradient(to right, #ff6b6b, #ff5252); }
+    
+    /* Enhanced Modal Styles */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 2000;
+    }
+
+    .modal-content {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+      max-width: 90%;
+      width: 400px;
+      text-align: center;
+      font-family: 'Quicksand', sans-serif;
+    }
+
+    .modal-content p {
+      font-size: 1.1rem;
+      margin-bottom: 25px;
+      color: #333;
+    }
+
+    .modal-actions .btn {
+      padding: 10px 20px;
+      font-size: 1rem;
+      margin: 0 10px;
+    }
+    
+    /* Toast Styles */
+    .toast { 
+      position: fixed; 
+      bottom: 20px; 
+      right: 20px; 
+      background: #58cc02; 
+      color: white; 
+      padding: 15px 20px; 
+      border-radius: 8px; 
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15); 
+      z-index: 2000; 
+      display: flex; 
+      align-items: center; 
+      gap: 10px; 
+      transform: translateY(120px); 
+      opacity: 0; 
+      transition: transform 0.4s ease-out, opacity 0.4s ease-out;
+      max-width: 350px;
+    }
+    
+    .toast i { font-size: 1.2rem; }
+  </style>
+</head>
+<body>
+<div id="app">
+  <div style="text-align:left; margin-bottom:10px;">
+    <button class="btn" onclick="window.location.href='english.html'">Back</button>
+  </div>
+  <h2>My Progress</h2>
+  
+  <div class="dashboard">
+    <div class="streak-container">
+      <div class="streak-box"><i class="fas fa-fire"></i><span id="streakCount">0</span> Day Streak</div>
+    </div>
+    <div class="progress-section">
+      <h3>Level Progress</h3>
+      <div><span>Level 1: Alphabets & Numbers</span><div class="progress-bar"><div class="progress-fill" id="level1Progress"></div></div></div>
+      <div><span>Level 2: Basic Words</span><div class="progress-bar"><div class="progress-fill" id="level2Progress"></div></div></div>
+      <div><span>Level 3: Sentences & Expressions</span><div class="progress-bar"><div class="progress-fill" id="level3Progress"></div></div></div>
+      <div><span>Games</span><div class="progress-bar"><div class="progress-fill" id="gamesProgress"></div></div></div>
+    </div>
+    <div class="progress-section">
+      <h3>Achievements</h3>
+      <div class="achievements-grid" id="achievementsContainer">
+        <!-- Achievements will be loaded here -->
+      </div>
+    </div>
+  </div>
+  
+  <div style="text-align: center; margin-top: 20px;">
+    <button class="btn" onclick="window.location.href='english.html'">Continue Learning</button>
+    <button class="btn btn-danger" onclick="resetProgress()">Reset Progress</button>
+  </div>
+</div>
+
+<!-- Enhanced Modal -->
+<div id="customResetModal" class="modal-overlay">
+  <div class="modal-content">
+    <p id="modalMessage">All your progress will be reset. Are you sure you want to continue?</p>
+    <div class="modal-actions">
+      <button class="btn btn-danger" onclick="performReset()">Yes</button>
+      <button class="btn" onclick="document.getElementById('customResetModal').style.display='none'">No</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== ACHIEVEMENTS DATA =====
+const ACHIEVEMENTS_DATA = [
+  { 
+    id: 'firstSteps', 
+    icon: 'fa-shoe-prints', 
+    title: 'First Steps',
+    description: 'Complete your first activity'
+  }, 
+  { 
+    id: 'alphabetMaster', 
+    icon: 'fa-font', 
+    title: 'Alphabet Master',
+    description: 'Learn all 26 letters'
+  },
+  { 
+    id: 'numberWhiz', 
+    icon: 'fa-calculator', 
+    title: 'Number Whiz',
+    description: 'Master numbers 1-100'
+  }, 
+  { 
+    id: 'wordExpert', 
+    icon: 'fa-book', 
+    title: 'Word Expert',
+    description: 'Complete all basic words'
+  },
+  { 
+    id: 'sentenceBuilder', 
+    icon: 'fa-comment', 
+    title: 'Sentence Builder',
+    description: 'Master all sentences'
+  }, 
+  { 
+    id: 'gameChampion', 
+    icon: 'fa-gamepad', 
+    title: 'Game Champion',
+    description: 'Complete all games'
+  },
+  { 
+    id: 'weekStreak', 
+    icon: 'fa-fire', 
+    title: '7-Day Streak',
+    description: 'Practice for 7 days straight'
+  }, 
+  { 
+    id: 'monthStreak', 
+    icon: 'fa-crown', 
+    title: '30-Day Streak',
+    description: 'Practice for 30 days straight'
+  }
+];
+
+// ===== PAGE-SPECIFIC DISPLAY FUNCTIONS =====
+
+// Enhanced achievement toast function
+function showAchievementToast(title, description) {
+  let toastEl = document.getElementById('achievementToastGlobal');
+  if (!toastEl) {
+    toastEl = document.createElement('div');
+    toastEl.id = 'achievementToastGlobal';
+    toastEl.className = 'toast';
+    document.body.appendChild(toastEl);
+  }
+  
+  toastEl.innerHTML = `
+    <i class="fas fa-trophy" style="color: gold;"></i>
+    <div>
+      <div class="toast-title" style="font-weight:bold;">Achievement Unlocked!</div>
+      <div class="toast-desc" style="font-size:0.9rem;"><strong>${title}</strong><br>${description}</div>
+    </div>
+  `;
+  
+  // Show toast
+  setTimeout(() => { 
+    toastEl.style.transform = 'translateY(0)'; 
+    toastEl.style.opacity = '1'; 
+  }, 10);
+  
+  // Hide toast after 5 seconds
+  setTimeout(() => { 
+    toastEl.style.transform = 'translateY(120px)'; 
+    toastEl.style.opacity = '0'; 
+  }, 5000);
+}
+
+function displayProgress() {
+  const progress = JSON.parse(localStorage.getItem('linguaKidsProgress'));
+  
+  if (!progress) {
+    console.log('No progress data found in localStorage');
+    return;
+  }
+  
+  console.log('Displaying progress data:', progress);
+  
+  // Update streak count
+  document.getElementById('streakCount').textContent = progress.streak.count || 0;
+
+  const calculateAverageProgress = (levelData) => {
+    const categories = Object.values(levelData);
+    if (categories.length === 0) return 0;
+    const totalCompleted = categories.reduce((sum, cat) => sum + cat.completed, 0);
+    const totalPossible = categories.reduce((sum, cat) => sum + cat.total, 0);
+    return totalPossible > 0 ? Math.round((totalCompleted / totalPossible) * 100) : 0;
+  };
+  
+  const updateBar = (elementId, percentage) => {
+    const fill = document.getElementById(elementId);
+    if (fill) {
+      fill.style.width = `${percentage}%`;
+      fill.textContent = `${percentage}%`;
+    }
+  };
+  
+  // Calculate progress for each level
+  const level1Progress = calculateAverageProgress(progress.level1);
+  const level2Progress = calculateAverageProgress(progress.level2);
+  const level3Progress = calculateAverageProgress(progress.level3);
+  const gamesProgress = calculateAverageProgress(progress.games);
+  
+  updateBar('level1Progress', level1Progress);
+  updateBar('level2Progress', level2Progress);
+  updateBar('level3Progress', level3Progress);
+  updateBar('gamesProgress', gamesProgress);
+  
+  displayAchievements(progress.achievements);
+}
+
+function displayAchievements(achievements) {
+  const container = document.getElementById('achievementsContainer');
+  
+  if (!achievements) {
+    console.log('No achievements data available');
+    container.innerHTML = '<p>No achievement data available.</p>';
+    return;
+  }
+  
+  console.log('Displaying achievements:', achievements);
+  
+  container.innerHTML = ACHIEVEMENTS_DATA.map(ach => {
+    const isUnlocked = achievements[ach.id];
+    console.log(`Achievement ${ach.id}: ${isUnlocked ? 'UNLOCKED' : 'locked'}`);
+    return `
+      <div class="achievement-card ${isUnlocked ? 'unlocked' : 'locked'}" 
+           onclick="${isUnlocked ? `showAchievementDetail('${ach.id}')` : ''}">
+        <div class="achievement-icon">
+          <i class="fas ${ach.icon}"></i>
+        </div>
+        <div class="achievement-title">${ach.title}</div>
+        <div class="achievement-desc">${ach.description}</div>
+        ${isUnlocked ? '<div style="margin-top: 5px; font-size: 0.7rem; color: #58cc02;"><i class="fas fa-check"></i> Unlocked</div>' : ''}
+      </div>
+    `;
+  }).join('');
+}
+
+function showAchievementDetail(achievementId) {
+  const achievement = ACHIEVEMENTS_DATA.find(a => a.id === achievementId);
+  if (achievement) {
+    alert(`🎉 ${achievement.title}\n\n${achievement.description}\n\nKeep up the great work!`);
+  }
+}
+
+function resetProgress() {
+  document.getElementById('customResetModal').style.display = 'flex';
+}
+
+function performReset() {
+  // Clear all stored data
+  localStorage.removeItem('linguaKidsProgress');
+  sessionStorage.clear();
+  
+  // Hide the modal
+  document.getElementById('customResetModal').style.display = 'none';
+  
+  // Reinitialize progress data
+  if (typeof initProgress === 'function') {
+    initProgress();
+  }
+  
+  // Refresh the display
+  displayProgress();
+  
+  // Show confirmation message
+  showAchievementToast("Progress Reset!", "All your data has been cleared.");
+}
+
+// ===== ROBUST INITIALIZATION =====
+document.addEventListener('DOMContentLoaded', function() {
+  console.log('DOM Content Loaded - Starting initialization');
+  
+  // Initialize progress data FIRST
+  if (typeof initProgress === 'function') {
+    console.log('Calling initProgress()');
+    initProgress();
+  } else {
+    console.error('initProgress function not found!');
+  }
+  
+  // Wait for scripts to load and then display progress
+  function attemptDisplayProgress(attempt = 0) {
+    const maxAttempts = 10;
+    
+    // Check if progress data is available
+    const progress = localStorage.getItem('linguaKidsProgress');
+    
+    if (progress) {
+      console.log('Progress data found, displaying progress');
+      displayProgress();
+    } else if (attempt < maxAttempts) {
+      console.log(`Attempt ${attempt + 1}: Progress data not ready, retrying...`);
+      setTimeout(() => attemptDisplayProgress(attempt + 1), 100);
+    } else {
+      console.error('Failed to load progress data after multiple attempts');
+    }
+  }
+  
+  // Start attempting to display progress after a short delay
+  setTimeout(() => attemptDisplayProgress(), 300);
+});
+
+// Handle page restoration from cache
+window.addEventListener('pageshow', function(event) {
+  if (event.persisted) {
+    console.log('Page restored from cache, refreshing progress display');
+    setTimeout(() => {
+      if (typeof initProgress === 'function') {
+        initProgress();
+      }
+      displayProgress();
+    }, 100);
+  }
+});
+
+// Force refresh on back/forward navigation
+if (performance.navigation && performance.navigation.type === 2) {
+  console.log('Back/forward navigation detected, refreshing data');
+  setTimeout(() => {
+    if (typeof initProgress === 'function') {
+      initProgress();
+    }
+    displayProgress();
+  }, 100);
+}
+
+// Ensure functions are available globally
+window.showAchievementToast = showAchievementToast;
+window.displayProgress = displayProgress;
+window.resetProgress = resetProgress;
+window.performReset = performReset;
+window.showAchievementDetail = showAchievementDetail;
+</script>
+
+<!-- Cache-busted script references -->
+<script src="progress.js"></script>
+<script src="script.js"></script>
+
+</body>
+</html>

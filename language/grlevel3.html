@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#58CC02">
+  <title>LinguaKids - Level 3</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700&family=Quicksand:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    body, html { 
+      margin: 0; 
+      padding: 0; 
+      font-family: 'Quicksand', sans-serif; 
+      background:#f6f8ff; 
+      overflow-x: hidden;
+    }
+
+    h2 { 
+      text-align:center; 
+      color:#58cc02; 
+      font-family:'Baloo 2', cursive; 
+    }
+
+    /* Grid layout */
+    .item-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr); /* 3 per row desktop */
+      gap: 20px;
+      margin: 20px auto;
+      padding: 0 15px;
+      max-width: 1000px;
+      box-sizing: border-box;
+    }
+
+    .item-card {
+      background: white;
+      padding: 15px;
+      border-radius: 12px;
+      text-align: center;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .question {
+      font-weight: bold;
+      color: #1cb0f6;
+      margin-bottom: 8px;
+    }
+    .answer {
+      margin-bottom: 10px;
+      color: #333;
+    }
+
+    .speak-btn {
+      background: linear-gradient(to right,#58cc02,#1cb0f6);
+      border: none; 
+      color: white; 
+      padding: 6px 12px;
+      border-radius: 50px; 
+      cursor: pointer;
+      font-size: 0.9rem; 
+      font-family: 'Baloo 2', cursive;
+      margin: 4px;
+    }
+    .speak-btn:hover { opacity: 0.9; }
+
+    /* Back button */
+    .btn {
+      background: linear-gradient(to right,#58cc02,#1cb0f6);
+      border: none; 
+      color: white; 
+      padding: 8px 20px; 
+      border-radius: 50px;
+      font-family: 'Baloo 2', cursive; 
+      cursor: pointer; 
+      margin: 10px 5px;
+    }
+    .btn:active { transform: scale(0.96); }
+
+    /* Tablet */
+    @media (max-width: 900px) {
+      .item-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    /* Mobile */
+    @media (max-width: 600px) {
+      .item-grid { grid-template-columns: repeat(1, 1fr); }
+    }
+  </style>
+</head>
+<body>
+  <button onclick="goBack()" class="btn">Back</button>
+  <h2 id="categoryTitle"></h2>
+  <div id="content" class="item-grid"></div>
+
+<script>
+const DATA = {
+  greetings: [
+    { q: "Hallo!", a: "Hallo! 👋", q_en: "Hello!", a_en: "Hello! 👋" },
+    { q: "Guten Morgen", a: "Guten Morgen! ☀️", q_en: "Good morning", a_en: "Good morning! ☀️" },
+    { q: "Guten Tag", a: "Guten Tag! 🌞", q_en: "Good afternoon", a_en: "Good afternoon! 🌞" },
+    { q: "Guten Abend", a: "Guten Abend! 🌙", q_en: "Good evening", a_en: "Good evening! 🌙" },
+    { q: "Gute Nacht", a: "Gute Nacht! 🌜", q_en: "Good night", a_en: "Good night! 🌜" },
+    { q: "Wie geht es dir?", a: "Mir geht es gut, danke! 😊", q_en: "How are you?", a_en: "I'm fine, thank you! 😊" },
+    { q: "Wie heißt du?", a: "Ich heiße [Dein Name]", q_en: "What's your name?", a_en: "My name is [Your Name]" },
+    { q: "Schön, dich kennenzulernen", a: "Schön, dich kennenzulernen! 🤝", q_en: "Nice to meet you", a_en: "Nice to meet you too! 🤝" },
+    { q: "Bis später", a: "Tschüss! 👋", q_en: "See you later", a_en: "See you! 👋" },
+    { q: "Danke", a: "Bitte! 😊", q_en: "Thank you", a_en: "You're welcome! 😊" },
+    { q: "Willkommen!", a: "Willkommen! 🤗", q_en: "Welcome!", a_en: "Welcome! 🤗" },
+{ q: "Alles gut?", a: "Ja, alles gut! 😊", q_en: "All good?", a_en: "Yes, all good! 😊" },
+{ q: "Wie war dein Tag?", a: "Mein Tag war schön! 🌞", q_en: "How was your day?", a_en: "My day was nice! 🌞" },
+{ q: "Was machst du?", a: "Ich spiele! 🎮", q_en: "What are you doing?", a_en: "I'm playing! 🎮" },
+{ q: "Bis morgen!", a: "Bis morgen! 🌙", q_en: "See you tomorrow!", a_en: "See you tomorrow! 🌙" },
+{ q: "Freut mich!", a: "Mich auch! 😊", q_en: "Pleased to meet you!", a_en: "Me too! 😊" },
+{ q: "Tschüss!", a: "Tschüss! 👋", q_en: "Bye!", a_en: "Bye! 👋" },
+{ q: "Danke schön", a: "Sehr gern! 😊", q_en: "Thank you very much", a_en: "You're very welcome! 😊" },
+{ q: "Viel Glück!", a: "Danke! 🍀", q_en: "Good luck!", a_en: "Thanks! 🍀" },
+{ q: "Kommst du mit?", a: "Ja, ich komme! 🚶‍♂️", q_en: "Are you coming?", a_en: "Yes, I'm coming! 🚶‍♂️" }
+
+  ],
+  activities: [
+    { q: "Ich esse Essen 🍎", q_en: "I eat food 🍎" },
+    { q: "Ich gehe zur Schule 🏫", q_en: "I go to school 🏫" },
+    { q: "Ich spiele mit Freunden 👫", q_en: "I play with friends 👫" },
+    { q: "Ich lese Bücher 📚", q_en: "I read books 📚" },
+    { q: "Ich sehe fern 📺", q_en: "I watch TV 📺" },
+    { q: "Ich helfe meiner Mutter 👩", q_en: "I help my mom 👩" },
+    { q: "Ich bade 🛁", q_en: "I take a bath 🛁" },
+    { q: "Ich putze mir die Zähne 🦷", q_en: "I brush my teeth 🦷" },
+    { q: "Ich schlafe nachts 😴", q_en: "I sleep at night 😴" },
+    { q: "Ich trinke Wasser 💧", q_en: "I drink water 💧" },
+    { q: "Ich male Bilder 🎨", q_en: "I paint pictures 🎨" },
+{ q: "Ich spiele Fußball ⚽", q_en: "I play football ⚽" },
+{ q: "Ich höre Musik 🎧", q_en: "I listen to music 🎧" },
+{ q: "Ich lerne Deutsch 🇩🇪", q_en: "I learn German 🇩🇪" },
+{ q: "Ich koche Essen 🍽️", q_en: "I cook food 🍽️" },
+{ q: "Ich singe ein Lied 🎤", q_en: "I sing a song 🎤" },
+{ q: "Ich renne schnell 🏃‍♂️", q_en: "I run fast 🏃‍♂️" },
+{ q: "Ich spiele Videospiele 🎮", q_en: "I play video games 🎮" },
+{ q: "Ich zeichne ✏️", q_en: "I draw ✏️" },
+{ q: "Ich spiele draußen 🌳", q_en: "I play outside 🌳" }
+
+  ],
+  questions: [
+    { q: "Wie heißt du?", a: "Ich heiße Johann.", q_en: "What is your name?", a_en: "My name is John." },
+    { q: "Wie alt bist du?", a: "Ich bin 6 Jahre alt.", q_en: "How old are you?", a_en: "I am 6 years old." },
+    { q: "Wo wohnst du?", a: "Ich wohne in Deutschland.", q_en: "Where do you live?", a_en: "I live in Germany." },
+    { q: "Magst du Obst?", a: "Ja, ich mag Äpfel.", q_en: "Do you like fruits?", a_en: "Yes, I like apples." },
+    { q: "Was ist das?🍎", a: "Das ist ein Apfel.", q_en: "What is this?🍎", a_en: "This is an apple." },
+    { q: "Was machst du gerne?", a: "Ich spiele gerne. 🎮", q_en: "What do you like to do?", a_en: "I like to play. 🎮" },
+{ q: "Welche Farbe magst du?", a: "Ich mag Blau. 🔵", q_en: "Which color do you like?", a_en: "I like blue. 🔵" },
+{ q: "Liebst du Tiere?", a: "Ja, ich liebe Hunde! 🐶", q_en: "Do you love animals?", a_en: "Yes, I love dogs! 🐶" },
+{ q: "Bist du müde?", a: "Ja, ein bisschen. 😴", q_en: "Are you tired?", a_en: "Yes, a little. 😴" },
+{ q: "Was isst du gerne?", a: "Ich esse gerne Pizza. 🍕", q_en: "What do you like to eat?", a_en: "I like eating pizza. 🍕" },
+{ q: "Kannst du schwimmen?", a: "Ja, ich kann schwimmen! 🏊‍♂️", q_en: "Can you swim?", a_en: "Yes, I can swim! 🏊‍♂️" },
+{ q: "Hast du Geschwister?", a: "Ja, ich habe eine Schwester.", q_en: "Do you have siblings?", a_en: "Yes, I have a sister." },
+{ q: "Was ist dein Lieblingsobst?", a: "Mein Lieblingsobst ist Mango 🥭.", q_en: "What is your favorite fruit?", a_en: "My favorite fruit is mango 🥭." },
+{ q: "Hast du Hunger?", a: "Ja, ich habe Hunger! 🍽️", q_en: "Are you hungry?", a_en: "Yes, I'm hungry! 🍽️" },
+{ q: "Wo ist deine Schule?", a: "Meine Schule ist in der Stadt.", q_en: "Where is your school?", a_en: "My school is in the city." }
+
+  ]
+};
+
+function getCategory(){
+  const params = new URLSearchParams(window.location.search);
+  return params.get("category");
+}
+
+function loadCategory(){
+  const cat = getCategory();
+  const items = DATA[cat] || [];
+
+  // FIX: Use the global updateProgress function to track initial category viewing
+  if (typeof updateProgress === 'function') {
+    updateProgress('level3', cat, 0.1); 
+  } else {
+    console.log("Progress tracked: " + cat);
+  }
+
+  document.getElementById("categoryTitle").textContent =
+    cat ? "Kategorie: " + cat.charAt(0).toUpperCase() + cat.slice(1) : "Kategorie";
+  
+  document.getElementById("content").innerHTML = items.map((i, index) => `
+  <div class="item-card">
+    <div class="question">F: ${i.q}</div>
+    <div class="answer" style="font-style: italic; color: #666;">${i.q_en}</div>
+    ${i.a ? `<div class="answer">A: ${i.a}</div>` : ""}
+    ${i.a ? `<div class="answer" style="font-style: italic; color: #666;">${i.a_en}</div>` : ""}
+    <button class="speak-btn" onclick="speak('${i.q}', '${cat}', ${index})">🔊 Question</button>
+    ${i.a ? `<button class="speak-btn" onclick="speak('${i.a}', '${cat}', ${index}, true)">🔊 Answer</button>` : ""}
+  </div>
+`).join("");
+
+}
+
+function speak(text, category, index, isAnswer = false){
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.lang = "de-DE";
+  speechSynthesis.speak(utter);
+  
+  // Track progress using the item-specific tracking function
+  if (typeof updateLevel3SentenceProgress === 'function') {
+    updateLevel3SentenceProgress(category, index);
+  }
+}
+
+function goBack(){
+  window.location.href = "german.html";
+}
+
+loadCategory();
+
+</script>
+<script src="grprogress.js"></script>
+<script src="script.js"></script>
+
+</body>
+</html>

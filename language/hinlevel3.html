@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#58CC02">
+  <title>LinguaKids - Hindi Level 3</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700&family=Quicksand:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    body, html { 
+      margin: 0; 
+      padding: 0; 
+      font-family: 'Quicksand', sans-serif; 
+      background:#f6f8ff; 
+      overflow-x: hidden;
+    }
+
+    h2 { 
+      text-align:center; 
+      color:#58cc02; 
+      font-family:'Baloo 2', cursive; 
+      margin-top: 60px; /* Add margin to prevent overlap with back button */
+    }
+
+    .sentence-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+      margin: 20px auto;
+      padding: 0 15px;
+      max-width: 1000px;
+      box-sizing: border-box;
+    }
+
+    .sentence-card {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      width: 100%;
+      box-sizing: border-box;
+      text-align: center;
+      cursor: pointer;
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+    .sentence-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 15px rgba(0,0,0,0.15);
+    }
+
+    .hindi-sentence {
+      font-size: 1.5rem;
+      font-weight: bold;
+      margin-bottom: 10px;
+      color: #58cc02;
+    }
+
+    .english-translation {
+      color: #666;
+      font-style: italic;
+      margin-bottom: 15px;
+    }
+
+    .speak-btn {
+      background: linear-gradient(to right,#58cc02,#1cb0f6);
+      border: none; 
+      color: white; 
+      padding: 8px 16px;
+      border-radius: 50px; 
+      cursor: pointer;
+      font-family: 'Baloo 2', cursive;
+      margin: 5px;
+      transition: all 0.2s;
+    }
+
+    .speak-btn:hover {
+      transform: scale(1.05);
+    }
+
+    .speak-btn:active {
+      transform: scale(0.95);
+    }
+
+    .btn {
+      background: linear-gradient(to right,#58cc02,#1cb0f6);
+      border: none; 
+      color: white; 
+      padding: 8px 20px; 
+      border-radius: 50px;
+      font-family: 'Baloo 2', cursive; 
+      cursor: pointer; 
+      margin: 10px 5px;
+      position: fixed;
+      top: 15px;
+      left: 15px;
+      z-index: 1000;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    }
+
+    .btn:active {
+      transform: scale(0.95);
+    }
+    
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #58cc02;
+      color: white;
+      padding: 15px 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transform: translateY(100px);
+      opacity: 0;
+      transition: transform 0.3s, opacity 0.3s;
+    }
+    
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    @media (max-width: 600px) {
+      .sentence-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      h2 {
+        margin-top: 15px;
+        margin-bottom: 15px;
+      }
+
+      .btn {
+        position: relative;
+        top: auto;
+        left: auto;
+        margin: 10px;
+        display: block;
+        width: fit-content;
+      }
+    }
+  </style>
+</head>
+<body>
+  <button onclick="goBack()" class="btn">Back</button>
+  <h2 id="categoryTitle"></h2>
+  <div id="content" class="sentence-grid"></div>
+
+  <div id="achievementToast" class="toast" style="display: none;">
+    <i class="fas fa-check-circle"></i>
+    <div>
+      <div id="toastTitle">Great job!</div>
+      <div id="toastDesc">Progress saved.</div>
+    </div>
+  </div>
+
+<script>
+// === DATA CONSTANTS ===
+const VOWELS_LENGTH = 12;
+const CONSONANTS_LENGTH = 37;
+const NUMBERS_1_TO_100_LENGTH = 100;
+const LEVEL2_CATEGORY_LENGTH = 10;
+const LEVEL3_CATEGORY_LENGTH = 10;
+const GAMES_LENGTHS = { 'fill-blanks': 5, 'match-words': 2, 'count-apples': 5 };
+
+// === CORE PROGRESS AND STREAK LOGIC (SELF-CONTAINED) ===
+function initHindiProgress() {
+  let progress = JSON.parse(localStorage.getItem('linguaKidsHindiProgress'));
+  if (!progress) {
+    const defaultProgress = {
+      level1: { alphabets: { completed: 0, total: VOWELS_LENGTH + CONSONANTS_LENGTH }, numbers: { completed: 0, total: NUMBERS_1_TO_100_LENGTH }},
+      level2: { fruits: { completed: 0, total: LEVEL2_CATEGORY_LENGTH }, vegetables: { completed: 0, total: LEVEL2_CATEGORY_LENGTH }, animals: { completed: 0, total: LEVEL2_CATEGORY_LENGTH }, birds: { completed: 0, total: LEVEL2_CATEGORY_LENGTH }, vehicles: { completed: 0, total: LEVEL2_CATEGORY_LENGTH }, colors: { completed: 0, total: LEVEL2_CATEGORY_LENGTH }},
+      level3: { greetings: { completed: 0, total: LEVEL3_CATEGORY_LENGTH }, activities: { completed: 0, total: LEVEL3_CATEGORY_LENGTH }, questions: { completed: 0, total: LEVEL3_CATEGORY_LENGTH }},
+      games: { 'fill-blanks': { completed: 0, total: GAMES_LENGTHS['fill-blanks'] }, 'match-words': { completed: 0, total: GAMES_LENGTHS['match-words'] }, 'count-apples': { completed: 0, total: GAMES_LENGTHS['count-apples'] }},
+      achievements: { firstSteps: false, alphabetMaster: false, numberWhiz: false, wordExpert: false, sentenceBuilder: false, gameChampion: false, weekStreak: false, monthStreak: false },
+      streak: { count: 0, lastDate: null }, sessionDate: null
+    };
+    localStorage.setItem('linguaKidsHindiProgress', JSON.stringify(defaultProgress));
+  }
+}
+
+function updateHindiStreak() {
+  const progress = JSON.parse(localStorage.getItem('linguaKidsHindiProgress'));
+  if (!progress) return;
+  const today = new Date().toDateString();
+  if (progress.sessionDate !== today) {
+    const lastDate = progress.streak.lastDate ? new Date(progress.streak.lastDate) : null;
+    const todayDate = new Date();
+    if (lastDate) {
+      const diffTime = todayDate.getTime() - lastDate.getTime();
+      const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+      if (diffDays === 1) { progress.streak.count++; } 
+      else if (diffDays > 1) { progress.streak.count = 1; }
+    } else { progress.streak.count = 1; }
+    progress.streak.lastDate = today;
+    progress.sessionDate = today;
+    localStorage.setItem('linguaKidsHindiProgress', JSON.stringify(progress));
+  }
+}
+
+function updateHindiProgress(level, category, increment = 1, itemIdentifier = null) {
+  const progress = JSON.parse(localStorage.getItem('linguaKidsHindiProgress'));
+  if (!progress || !progress[level] || !progress[level][category]) return false;
+  const today = new Date().toDateString();
+  const sessionKey = itemIdentifier ? `${level}_${category}_${itemIdentifier}_${today}` : null;
+  if (sessionKey && sessionStorage.getItem(sessionKey)) { return false; }
+  if (progress[level][category].completed < progress[level][category].total) {
+    progress[level][category].completed = Math.min(progress[level][category].completed + increment, progress[level][category].total);
+  } else { return false; }
+  localStorage.setItem('linguaKidsHindiProgress', JSON.stringify(progress));
+  if (sessionKey) { sessionStorage.setItem(sessionKey, 'true'); }
+  updateHindiStreak();
+  showToast("बहुत बढ़िया!", "प्रगति दर्ज हुई (Progress saved!)");
+  return true;
+}
+
+function showToast(title, description) {
+  const toast = document.getElementById("achievementToast");
+  if (!toast) return;
+  toast.style.display = 'flex';
+  toast.querySelector("#toastTitle").textContent = title;
+  toast.querySelector("#toastDesc").textContent = description;
+  toast.classList.add("show");
+  setTimeout(() => { 
+      toast.classList.remove("show");
+      setTimeout(() => { toast.style.display = 'none'; }, 300);
+  }, 3000);
+}
+
+
+// === PAGE-SPECIFIC DATA AND FUNCTIONS ===
+const SENTENCES = {
+  greetings: [
+    {hindi: "नमस्ते", english: "Hello", icon: "👋"},
+    {hindi: "शुभ प्रभात", english: "Good morning", icon: "🌅"},
+    {hindi: "शुभ संध्या", english: "Good evening", icon: "🌇"},
+    {hindi: "शुभ रात्रि", english: "Good night", icon: "🌙"},
+    {hindi: "आप कैसे हैं?", english: "How are you?", icon: "🙂"},
+    {hindi: "धन्यवाद", english: "Thank you", icon: "🙏"},
+    {hindi: "कृपया", english: "Please", icon: "🥺"},
+    {hindi: "क्षमा कीजिए", english: "Excuse me", icon: "🙇"},
+    {hindi: "अलविदा", english: "Goodbye", icon: "👋"},
+    {hindi: "कैसे चल रहा है?", english: "How is it going?", icon: "🙂"},
+{hindi: "आपका दिन कैसा था?", english: "How was your day?", icon: "🌞"},
+{hindi: "स्वागत है", english: "Welcome", icon: "🤗"},
+{hindi: "ध्यान रखना", english: "Take care", icon: "💛"},
+{hindi: "जल्दी मिलेंगे", english: "See you soon", icon: "👋"},
+{hindi: "अच्छा लगा आपसे मिलकर", english: "Nice to meet you", icon: "🤝"},
+{hindi: "मुझे माफ़ करें", english: "I'm sorry", icon: "😔"},
+{hindi: "बधाई हो!", english: "Congratulations!", icon: "🎉"},
+{hindi: "बहुत अच्छा!", english: "Very good!", icon: "⭐"},
+{hindi: "शुभकामनाएँ", english: "Best wishes", icon: "🌟"},
+    {hindi: "फिर मिलेंगे", english: "See you again", icon: "👋"}
+  ],
+  activities: [
+    {hindi: "मैं खाता हूँ", english: "I eat", icon: "🍽️"},
+    {hindi: "मैं पीता हूँ", english: "I drink", icon: "🥛"},
+    {hindi: "मैं सोता हूँ", english: "I sleep", icon: "😴"},
+    {hindi: "मैं खेलता हूँ", english: "I play", icon: "⚽"},
+    {hindi: "मैं पढ़ता हूँ", english: "I read", icon: "📖"},
+    {hindi: "मैं लिखता हूँ", english: "I write", icon: "✏️"},
+    {hindi: "मैं गाता हूँ", english: "I sing", icon: "🎤"},
+    {hindi: "मैं नाचता हूँ", english: "I dance", icon: "💃"},
+    {hindi: "मैं चलता हूँ", english: "I walk", icon: "🚶"},
+    {hindi: "मैं स्नान करता हूँ", english: "I take a bath", icon: "🛁"},
+{hindi: "मैं स्कूल जाता हूँ", english: "I go to school", icon: "🏫"},
+{hindi: "मैं होमवर्क करता हूँ", english: "I do homework", icon: "📒"},
+{hindi: "मैं टीवी देखता हूँ", english: "I watch TV", icon: "📺"},
+{hindi: "मैं खाना बनाता हूँ", english: "I cook food", icon: "🍳"},
+{hindi: "मैं मदद करता हूँ", english: "I help others", icon: "🤝"},
+{hindi: "मैं हँसता हूँ", english: "I laugh", icon: "😄"},
+{hindi: "मैं तस्वीर बनाता हूँ", english: "I draw a picture", icon: "🎨"},
+{hindi: "मैं सफाई करता हूँ", english: "I clean", icon: "🧹"},
+{hindi: "मैं संगीत सुनता हूँ", english: "I listen to music", icon: "🎧"},
+    {hindi: "मैं दौड़ता हूँ", english: "I run", icon: "🏃"}
+  ],
+  questions: [
+    {hindi: "आपका नाम क्या है?", english: "What is your name?", icon: "❓"},
+    {hindi: "आप कहाँ रहते हैं?", english: "Where do you live?", icon: "🏠"},
+    {hindi: "आपकी उम्र क्या है?", english: "How old are you?", icon: "🎂"},
+    {hindi: "यह क्या है?", english: "What is this?", icon: "❓"},
+    {hindi: "कितना है?", english: "How much is it?", icon: "💰"},
+    {hindi: "क्या आप ठीक हैं?", english: "Are you okay?", icon: "🤔"},
+    {hindi: "आप क्या कर रहे हैं?", english: "What are you doing?", icon: "❓"},
+    {hindi: "क्या आप मेरे दोस्त बनोगे?", english: "Will you be my friend?", icon: "🤝"},
+    {hindi: "क्या आप मुझे हिंदी सिखा सकते हैं?", english: "Can you teach me Hindi?", icon: "📚"},
+    {hindi: "आपका पसंदीदा रंग कौन सा है?", english: "What is your favorite color?", icon: "🎨"},
+{hindi: "क्या आपको खेल पसंद हैं?", english: "Do you like games?", icon: "🎮"},
+{hindi: "आप स्कूल जाते हैं?", english: "Do you go to school?", icon: "🏫"},
+{hindi: "आप क्या खाना पसंद करते हैं?", english: "What do you like to eat?", icon: "🍽️"},
+{hindi: "आप कहाँ जा रहे हैं?", english: "Where are you going?", icon: "➡️"},
+{hindi: "आपको कौन सा फल पसंद है?", english: "Which fruit do you like?", icon: "🍎"},
+{hindi: "क्या आप मेरी मदद करेंगे?", english: "Will you help me?", icon: "🤝"},
+{hindi: "क्या आप खेलना चाहते हैं?", english: "Do you want to play?", icon: "⚽"},
+{hindi: "आप कब आएंगे?", english: "When will you come?", icon: "⏰"},
+{hindi: "क्या आप तैयार हैं?", english: "Are you ready?", icon: "👍"},
+    {hindi: "क्या आप अंग्रेजी बोलते हैं?", english: "Do you speak English?", icon: "🗣️"}
+  ]
+};
+
+const CATEGORY_NAMES = {
+  greetings: "Greetings",
+  activities: "Daily Activities",
+  questions: "Simple Questions & Answers"
+};
+
+const urlParams = new URLSearchParams(window.location.search);
+const category = urlParams.get('category');
+
+function initializePage() {
+  if (category && SENTENCES[category]) {
+    document.getElementById('categoryTitle').textContent = CATEGORY_NAMES[category];
+    const contentDiv = document.getElementById('content');
+    contentDiv.innerHTML = SENTENCES[category].map((item, index) => `
+      <div class="sentence-card" onclick="trackSentenceProgress('${category}', ${index})">
+        <div style="font-size: 2rem; margin-bottom: 10px;">${item.icon}</div>
+        <div class="hindi-sentence">${item.hindi}</div>
+        <div class="english-translation">${item.english}</div>
+        <button class="speak-btn" onclick="event.stopPropagation(); speakText('${item.hindi}'); trackSentenceProgress('${category}', ${index})">
+          <i class="fas fa-volume-up"></i>
+        </button>
+      </div>
+    `).join('');
+  } else {
+    document.getElementById('content').innerHTML = '<p>Category not found. Please go back and select a valid category.</p>';
+  }
+}
+
+function trackSentenceProgress(category, index) {
+  const identifier = `${category}_${index}`;
+  updateHindiProgress('level3', category, 1, identifier);
+}
+
+function speakText(text) {
+  if ('speechSynthesis' in window) {
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'hi-IN';
+    utterance.rate = 0.8;
+    speechSynthesis.speak(utterance);
+  } else {
+    alert('Speech synthesis not supported in this browser.');
+  }
+}
+
+function goBack() {
+  window.location.href = 'hindi.html';
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  initHindiProgress();
+  initializePage();
+});
+</script>
+
+<script src="script.js"></script>
+</body>
+</html>

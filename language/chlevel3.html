@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#58CC02">
+  <title>LinguaKids - Level 3 (Chinese)</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700&family=Quicksand:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    body, html { 
+      margin: 0; 
+      padding: 0; 
+      font-family: 'Quicksand', sans-serif; 
+      background:#f6f8ff; 
+      overflow-x: hidden;
+    }
+
+    h2 { 
+      text-align:center; 
+      color:#58cc02; 
+      font-family:'Baloo 2', cursive; 
+    }
+
+    .item-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      margin: 20px auto;
+      padding: 0 15px;
+      max-width: 1000px;
+      box-sizing: border-box;
+    }
+
+    .item-card {
+      background: white;
+      padding: 15px;
+      border-radius: 12px;
+      text-align: center;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      width: 100%;
+      box-sizing: border-box;
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+    .item-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 15px rgba(0,0,0,0.15);
+    }
+
+    .question {
+      font-weight: bold;
+      color: #1cb0f6;
+      margin-bottom: 6px;
+      font-size: 1.3rem;
+    }
+    .hanzi { font-size: 1.3rem; margin-bottom: 4px; }
+    .pinyin { color: #1cb0f6; margin-bottom: 4px; }
+    .english { color: #555; margin-bottom: 6px; }
+
+    .speak-btn {
+      background: linear-gradient(to right,#58cc02,#1cb0f6);
+      border: none; 
+      color: white; 
+      padding: 6px 12px;
+      border-radius: 50px; 
+      cursor: pointer;
+      font-size: 0.9rem; 
+      font-family: 'Baloo 2', cursive;
+      margin: 3px;
+      transition: all 0.3s;
+    }
+    .speak-btn:hover { 
+      opacity: 0.9; 
+      transform: scale(1.05);
+    }
+
+    .btn {
+      background: linear-gradient(to right,#58cc02,#1cb0f6);
+      border: none; 
+      color: white; 
+      padding: 8px 20px; 
+      border-radius: 50px;
+      font-family: 'Baloo 2', cursive; 
+      cursor: pointer; 
+      margin: 10px 5px;
+      transition: all 0.3s;
+    }
+    .btn:active { transform: scale(0.96); }
+    .btn:hover { opacity: 0.9; }
+
+    @media (max-width: 900px) { .item-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 600px) { .item-grid { grid-template-columns: repeat(1, 1fr); } }
+
+    /* Toast notification styles */
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #58cc02;
+      color: white;
+      padding: 15px 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transform: translateY(100px);
+      opacity: 0;
+      transition: transform 0.3s, opacity 0.3s;
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    /* Category navigation */
+    .category-nav {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin: 20px 0;
+      flex-wrap: wrap;
+    }
+
+    .category-btn {
+      background: #e0e0e0;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .category-btn.active {
+      background: #58cc02;
+      color: white;
+    }
+
+    .category-btn:hover {
+      background: #d0d0d0;
+    }
+
+    .category-btn.active:hover {
+      background: #4bb802;
+    }
+
+    /* Back button positioning */
+    .back-button-container {
+      position: fixed;
+      top: 15px;
+      left: 15px;
+      z-index: 1000;
+    }
+
+    .back-button-container .btn {
+      margin: 0;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+
+    /* Main content area */
+    #content {
+      padding-top: 60px;
+      position: relative;
+      z-index: 1;
+    }
+
+    @media (max-width: 600px) {
+      .back-button-container {
+        top: 10px;
+        left: 10px;
+      }
+      
+      .back-button-container .btn {
+        padding: 8px 16px;
+        font-size: 0.9rem;
+      }
+      
+      #content {
+        padding-top: 50px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="back-button-container">
+    <button onclick="goBack()" class="btn">Back</button>
+  </div>
+  
+  <div id="content">
+    <h2 id="categoryTitle"></h2>
+    
+    <!-- Category Navigation -->
+    <div class="category-nav">
+      <button class="category-btn" onclick="changeCategory('greetings')">Greetings</button>
+      <button class="category-btn" onclick="changeCategory('activities')">Activities</button>
+    </div>
+    
+    <div class="item-grid" id="itemGrid"></div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="achievementToast" class="toast">
+    <i class="fas fa-trophy"></i>
+    <div>
+      <div id="toastTitle">成就解锁! Achievement Unlocked!</div>
+      <div id="toastDesc">You've earned a new badge.</div>
+    </div>
+  </div>
+
+<script>
+const DATA = {
+  greetings: [
+    { char: "你好！", pinyin: "nǐ hǎo!", english: "Hello! 👋" },
+    { char: "早上好！", pinyin: "zǎoshang hǎo!", english: "Good morning! ☀️" },
+    { char: "下午好！", pinyin: "xiàwǔ hǎo!", english: "Good afternoon! 🌞" },
+    { char: "晚上好！", pinyin: "wǎnshàng hǎo!", english: "Good evening! 🌙" },
+    { char: "晚安！", pinyin: "wǎn'ān!", english: "Good night! 🌜" },
+    { char: "你好吗？", pinyin: "nǐ hǎo ma?", english: "How are you?" },
+    { char: "你叫什么名字？", pinyin: "nǐ jiào shénme míngzi?", english: "What's your name?" },
+    { char: "很高兴认识你！", pinyin: "hěn gāoxìng rènshi nǐ!", english: "Nice to meet you!" },
+    { char: "再见！", pinyin: "zàijiàn!", english: "See you later 👋" },
+    { char: "谢谢！", pinyin: "xièxiè!", english: "Thank you 😊" },
+    { char: "欢迎！", pinyin: "huānyíng!", english: "Welcome! 🤗" },
+{ char: "你好吗？", pinyin: "nǐ hǎo ma?", english: "Are you okay? 🙂" },
+{ char: "我很好！", pinyin: "wǒ hěn hǎo!", english: "I am good! 😄" },
+{ char: "太谢谢你了！", pinyin: "tài xièxie nǐ le!", english: "Thank you so much! 🙏" },
+{ char: "不客气！", pinyin: "bú kèqi!", english: "You're welcome! 😊" },
+{ char: "对不起！", pinyin: "duìbuqǐ!", english: "Sorry! 😞" },
+{ char: "没关系！", pinyin: "méi guānxi!", english: "It's okay! 😊" },
+{ char: "祝你快乐！", pinyin: "zhù nǐ kuàilè!", english: "Wish you happiness! 🎉" },
+{ char: "请等一下！", pinyin: "qǐng děng yíxià!", english: "Please wait a moment! ⏳" },
+{ char: "加油！", pinyin: "jiāyóu!", english: "You can do it! 💪" }
+
+  ],
+  activities: [
+    { char: "我吃苹果 🍎", pinyin: "wǒ chī píngguǒ", english: "I eat an apple 🍎" },
+    { char: "我去学校 🏫", pinyin: "wǒ qù xuéxiào", english: "I go to school 🏫" },
+    { char: "我和朋友玩 👫", pinyin: "wǒ hé péngyǒu wán", english: "I play with friends 👫" },
+    { char: "我看书 📚", pinyin: "wǒ kàn shū", english: "I read books 📚" },
+    { char: "我看电视 📺", pinyin: "wǒ kàn diànshì", english: "I watch TV 📺" },
+    { char: "我帮妈妈 👩", pinyin: "wǒ bāng māmā", english: "I help my mom 👩" },
+    { char: "我洗澡 🛁", pinyin: "wǒ xǐzǎo", english: "I take a bath 🛁" },
+    { char: "我刷牙 🦷", pinyin: "wǒ shuā yá", english: "I brush my teeth 🦷" },
+    { char: "我晚上睡觉 😴", pinyin: "wǒ wǎnshàng shuìjiào", english: "I sleep at night 😴" },
+    { char: "我喝水 💧", pinyin: "wǒ hē shuǐ", english: "I drink water 💧" },
+    { char: "我画画 🎨", pinyin: "wǒ huàhuà", english: "I draw 🎨" },
+{ char: "我唱歌 🎤", pinyin: "wǒ chànggē", english: "I sing 🎤" },
+{ char: "我跳舞 💃", pinyin: "wǒ tiàowǔ", english: "I dance 💃" },
+{ char: "我写作业 ✏️", pinyin: "wǒ xiě zuòyè", english: "I do homework ✏️" },
+{ char: "我跑步 🏃‍♀️", pinyin: "wǒ pǎobù", english: "I run 🏃‍♀️" },
+{ char: "我玩游戏 🎮", pinyin: "wǒ wán yóuxì", english: "I play games 🎮" },
+{ char: "我听音乐 🎧", pinyin: "wǒ tīng yīnyuè", english: "I listen to music 🎧" },
+{ char: "我做饭 🍳", pinyin: "wǒ zuòfàn", english: "I cook 🍳" },
+{ char: "我打扫房间 🧹", pinyin: "wǒ dǎsǎo fángjiān", english: "I clean my room 🧹" },
+{ char: "我买东西 🛒", pinyin: "wǒ mǎi dōngxi", english: "I buy things 🛒" }
+  ]
+};
+
+let currentCategory = 'greetings';
+
+function getCategory(){
+  const params = new URLSearchParams(window.location.search);
+  return params.get("category") || 'greetings';
+}
+
+function loadCategory(category = null){
+  if (category) {
+    currentCategory = category;
+    // Update URL without page reload
+    const newUrl = `${window.location.pathname}?category=${category}`;
+    window.history.replaceState({}, '', newUrl);
+  } else {
+    currentCategory = getCategory();
+  }
+  
+  const items = DATA[currentCategory] || [];
+
+  document.getElementById("categoryTitle").textContent = getCategoryTitle(currentCategory);
+
+  // Update active category button
+  document.querySelectorAll('.category-btn').forEach(btn => {
+    btn.classList.remove('active');
+    if (btn.textContent.toLowerCase() === currentCategory) {
+      btn.classList.add('active');
+    }
+  });
+
+  document.getElementById("itemGrid").innerHTML = items.map(i => `
+    <div class="item-card">
+      <div class="question">${i.char}</div>
+      <div class="pinyin">${i.pinyin}</div>
+      <div class="english">${i.english}</div>
+      <div class="lesson-controls">
+        <button class="speak-btn" onclick="speakSentence('${i.char}', '${currentCategory}')">🔊 Sentence</button>
+        <button class="speak-btn" onclick="speak('${i.pinyin}')">🔊 Pinyin</button>
+      </div>
+    </div>
+  `).join("");
+}
+
+function changeCategory(category) {
+  loadCategory(category);
+}
+
+function getCategoryTitle(category) {
+  const categoryTitles = {
+    greetings: "Greetings & Expressions",
+    activities: "Daily Activities"
+  };
+  return categoryTitles[category] || "Category";
+}
+
+function speak(text){
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.lang = "zh-CN";
+  speechSynthesis.speak(utter);
+}
+
+function speakSentence(sentence, category) {
+  const utter = new SpeechSynthesisUtterance(sentence);
+  utter.lang = "zh-CN";
+  speechSynthesis.speak(utter);
+  
+  trackSentenceInteraction(category);
+}
+
+function trackSentenceInteraction(category) {
+  const interactionKey = `sentence_interaction_${category}_${new Date().toDateString()}`;
+  let interactions = parseInt(sessionStorage.getItem(interactionKey) || '0');
+  
+  interactions++;
+  sessionStorage.setItem(interactionKey, interactions.toString());
+  
+  // Award progress for every 2 interactions
+  if (interactions % 2 === 0 && typeof updateProgress === 'function') {
+    updateProgress('level3', category, 1);
+  }
+}
+
+function goBack(){
+  window.location.href = "chinese.html";
+}
+
+// Ensure the page loads content on DOM ready
+document.addEventListener('DOMContentLoaded', function() {
+  loadCategory();
+});
+</script>
+<script src="script.js"></script>
+<script src="chprogress.js"></script>
+
+</body>
+</html>

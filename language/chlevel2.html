@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#58CC02">
+  <title>LinguaKids - Level 2 (Chinese)</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700&family=Quicksand:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  body, html { 
+    margin: 0; 
+    padding: 0; 
+    font-family: 'Quicksand', sans-serif; 
+    background:#f6f8ff; 
+    overflow-x: hidden;
+  }
+
+  h2 { 
+    text-align:center; 
+    color:#58cc02; 
+    font-family:'Baloo 2', cursive; 
+  }
+
+  .item-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr); /* 5 per row desktop */
+    gap: 20px;
+    margin: 20px auto;
+    padding: 0 15px;
+    max-width: 1200px;
+    box-sizing: border-box;
+  }
+
+  .item-card {
+    background: white;
+    padding: 15px;
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    width: 100%;
+    box-sizing: border-box;
+    transition: transform 0.3s, box-shadow 0.3s;
+  }
+
+  .item-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0,0,0,0.15);
+  }
+
+  .item-card div { margin: 5px 0; }
+
+  .item-card img {
+    width: 50px;
+    height: 50px;
+    object-fit: contain;
+  }
+
+  .hanzi {
+    font-size: 1.4rem;
+    font-weight: bold;
+    color: #333;
+  }
+
+  .pinyin {
+    font-size: 1rem;
+    color: #1cb0f6;
+  }
+
+  .english {
+    font-size: 0.9rem;
+    color: #555;
+  }
+
+  .speak-btn {
+    background: linear-gradient(to right,#58cc02,#1cb0f6);
+    border: none; 
+    color: white; 
+    padding: 6px 12px;
+    border-radius: 50px; 
+    cursor: pointer;
+    font-size: 0.9rem; 
+    font-family: 'Baloo 2', cursive;
+    transition: all 0.3s;
+  }
+  .speak-btn:hover { 
+    opacity: 0.9; 
+    transform: scale(1.05);
+  }
+
+  .btn {
+    background: linear-gradient(to right,#58cc02,#1cb0f6);
+    border: none; 
+    color: white; 
+    padding: 8px 20px; 
+    border-radius: 50px;
+    font-family: 'Baloo 2', cursive; 
+    cursor: pointer; 
+    margin: 10px 5px;
+    transition: all 0.3s;
+  }
+  .btn:active { transform: scale(0.96); }
+  .btn:hover { opacity: 0.9; }
+
+  @media (max-width: 900px) {
+    .item-grid {
+      grid-template-columns: repeat(3, 1fr);
+      max-width: 100%;
+      padding: 0 10px;
+    }
+  }
+
+  @media (max-width: 600px) {
+    .item-grid {
+      grid-template-columns: repeat(2, 1fr);
+      max-width: 100%;
+      padding: 0 8px;
+    }
+  }
+
+  /* Toast notification styles */
+  .toast {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: #58cc02;
+    color: white;
+    padding: 15px 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transform: translateY(100px);
+    opacity: 0;
+    transition: transform 0.3s, opacity 0.3s;
+  }
+
+  .toast.show {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  /* Category navigation */
+  .category-nav {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin: 20px 0;
+    flex-wrap: wrap;
+  }
+
+  .category-btn {
+    background: #e0e0e0;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+
+  .category-btn.active {
+    background: #58cc02;
+    color: white;
+  }
+
+  .category-btn:hover {
+    background: #d0d0d0;
+  }
+
+  .category-btn.active:hover {
+    background: #4bb802;
+  }
+
+  /* Back button positioning */
+  .back-button-container {
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    z-index: 1000;
+  }
+
+  .back-button-container .btn {
+    margin: 0;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  }
+
+  /* Main content area */
+  #content {
+    padding-top: 60px;
+    position: relative;
+    z-index: 1;
+  }
+
+  @media (max-width: 600px) {
+    .back-button-container {
+      top: 10px;
+      left: 10px;
+    }
+    
+    .back-button-container .btn {
+      padding: 8px 16px;
+      font-size: 0.9rem;
+    }
+    
+    #content {
+      padding-top: 50px;
+    }
+  }
+</style>
+</head>
+<body>
+  <div class="back-button-container">
+    <button onclick="goBack()" class="btn">Back</button>
+  </div>
+  
+  <div id="content">
+    <h2 id="categoryTitle"></h2>
+    
+    <!-- Category Navigation -->
+    <div class="category-nav">
+      <button class="category-btn" onclick="changeCategory('fruits')">Fruits</button>
+      <button class="category-btn" onclick="changeCategory('vegetables')">Vegetables</button>
+      <button class="category-btn" onclick="changeCategory('animals')">Animals</button>
+      <button class="category-btn" onclick="changeCategory('nature')">Nature</button>
+    </div>
+    
+    <div class="item-grid" id="itemGrid"></div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="achievementToast" class="toast">
+    <i class="fas fa-trophy"></i>
+    <div>
+      <div id="toastTitle">成就解锁! Achievement Unlocked!</div>
+      <div id="toastDesc">You've earned a new badge.</div>
+    </div>
+  </div>
+
+<script>
+const DATA = {
+  fruits: [
+    {char: "苹果", pinyin: "píngguǒ", english: "Apple", icon: "🍎"},
+    {char: "香蕉", pinyin: "xiāngjiāo", english: "Banana", icon: "🍌"},
+    {char: "橙子", pinyin: "chéngzi", english: "Orange", icon: "🍊"},
+    {char: "芒果", pinyin: "mángguǒ", english: "Mango", icon: "🥭"},
+    {char: "葡萄", pinyin: "pútáo", english: "Grapes", icon: "🍇"},
+    {char: "菠萝", pinyin: "bōluó", english: "Pineapple", icon: "🍍"},
+    {char: "草莓", pinyin: "cǎoméi", english: "Strawberry", icon: "🍓"},
+    {char: "西瓜", pinyin: "xīguā", english: "Watermelon", icon: "🍉"},
+    {char: "樱桃", pinyin: "yīngtáo", english: "Cherry", icon: "🍒"},
+    {char: "桃", pinyin: "táo", english: "Peach", icon: "🍑"},
+    {char: "梨", pinyin: "lí", english: "Pear", icon: "🍐"},
+{char: "柠檬", pinyin: "níngméng", english: "Lemon", icon: "🍋"},
+{char: "猕猴桃", pinyin: "míhóutáo", english: "Kiwi", icon: "🥝"},
+{char: "木瓜", pinyin: "mùguā", english: "Papaya", icon: "🍈"},
+{char: "石榴", pinyin: "shíliu", english: "Pomegranate", icon: "🍎"},
+{char: "椰子", pinyin: "yēzi", english: "Coconut", icon: "🥥"},
+{char: "李子", pinyin: "lǐzi", english: "Plum", icon: "🍑"},
+{char: "葡萄柚", pinyin: "pútáoyòu", english: "Grapefruit", icon: "🍊"}
+
+  ],
+  vegetables: [
+    {char: "胡萝卜", pinyin: "húluóbo", english: "Carrot", icon: "🥕"},
+    {char: "土豆", pinyin: "tǔdòu", english: "Potato", icon: "🥔"},
+    {char: "西红柿", pinyin: "xīhóngshì", english: "Tomato", icon: "🍅"},
+    {char: "白菜", pinyin: "báicài", english: "Cabbage", icon: "🥬"},
+    {char: "玉米", pinyin: "yùmǐ", english: "Corn", icon: "🌽"},
+    {char: "洋葱", pinyin: "yángcōng", english: "Onion", icon: "🧅"},
+    {char: "蒜", pinyin: "suàn", english: "Garlic", icon: "🧄"},
+    {char: "西兰花", pinyin: "xīlánhuā", english: "Broccoli", icon: "🥦"},
+    {char: "黄瓜", pinyin: "huángguā", english: "Cucumber", icon: "🥒"},
+    {char: "辣椒", pinyin: "làjiāo", english: "Pepper", icon: "🌶️"},
+    {char: "菠菜", pinyin: "bōcài", english: "Spinach", icon: "🥬"},
+{char: "蘑菇", pinyin: "mógū", english: "Mushroom", icon: "🍄"},
+{char: "红薯", pinyin: "hóngshǔ", english: "Sweet Potato", icon: "🍠"},
+{char: "茄子", pinyin: "qiézi", english: "Eggplant", icon: "🍆"},
+{char: "生菜", pinyin: "shēngcài", english: "Lettuce", icon: "🥬"},
+{char: "葱", pinyin: "cōng", english: "Spring Onion", icon: "🌿"},
+{char: "南瓜", pinyin: "nánguā", english: "Pumpkin", icon: "🎃"}
+  ],
+  animals: [
+    {char: "狮子", pinyin: "shīzi", english: "Lion", icon: "🦁"},
+    {char: "老虎", pinyin: "lǎohǔ", english: "Tiger", icon: "🐯"},
+    {char: "大象", pinyin: "dàxiàng", english: "Elephant", icon: "🐘"},
+    {char: "狗", pinyin: "gǒu", english: "Dog", icon: "🐶"},
+    {char: "猫", pinyin: "māo", english: "Cat", icon: "🐱"},
+    {char: "马", pinyin: "mǎ", english: "Horse", icon: "🐴"},
+    {char: "猴", pinyin: "hóu", english: "Monkey", icon: "🐵"},
+    {char: "牛", pinyin: "niú", english: "Cow", icon: "🐄"},
+    {char: "兔", pinyin: "tù", english: "Rabbit", icon: "🐇"},
+    {char: "羊", pinyin: "yáng", english: "Sheep", icon: "🐑"},
+    {char: "熊", pinyin: "xióng", english: "Bear", icon: "🐻"},
+{char: "熊猫", pinyin: "xióngmāo", english: "Panda", icon: "🐼"},
+{char: "蛇", pinyin: "shé", english: "Snake", icon: "🐍"},
+{char: "鱼", pinyin: "yú", english: "Fish", icon: "🐟"},
+{char: "青蛙", pinyin: "qīngwā", english: "Frog", icon: "🐸"},
+{char: "狐狸", pinyin: "húlí", english: "Fox", icon: "🦊"},
+{char: "企鹅", pinyin: "qǐ'é", english: "Penguin", icon: "🐧"},
+{char: "乌龟", pinyin: "wūguī", english: "Turtle", icon: "🐢"}
+  ],
+  nature: [
+    {char: "月亮", pinyin: "yuèliang", english: "Moon", icon: "🌕"},   
+    {char: "河", pinyin: "hé", english: "River", icon: "🏞️"},   
+    {char: "山", pinyin: "shān", english: "Mountain", icon: "⛰️"},     
+    {char: "树", pinyin: "shù", english: "Tree", icon: "🌳"},          
+    {char: "火", pinyin: "huǒ", english: "Fire", icon: "🔥"},            
+    {char: "水", pinyin: "shuǐ", english: "Water", icon: "💧"},           
+    {char: "海", pinyin: "hǎi", english: "Sea", icon: "🌊"},              
+    {char: "花", pinyin: "huā", english: "Flower", icon: "🌸"},          
+    {char: "风", pinyin: "fēng", english: "Wind", icon: "🌬️"},           
+    {char: "云", pinyin: "yún", english: "Cloud", icon: "☁️"},
+    {char: "太阳", pinyin: "tàiyáng", english: "Sun", icon: "☀️"},
+{char: "星星", pinyin: "xīngxing", english: "Star", icon: "⭐"},
+{char: "雨", pinyin: "yǔ", english: "Rain", icon: "🌧️"},
+{char: "雪", pinyin: "xuě", english: "Snow", icon: "❄️"},
+{char: "森林", pinyin: "sēnlín", english: "Forest", icon: "🌲"},
+{char: "草", pinyin: "cǎo", english: "Grass", icon: "🌿"},
+{char: "天空", pinyin: "tiānkōng", english: "Sky", icon: "🌌"},
+{char: "闪电", pinyin: "shǎndiàn", english: "Lightning", icon: "⚡"}
+
+  ]
+};
+
+let currentCategory = 'fruits';
+
+function getCategory() {
+  const urlParams = new URLSearchParams(window.location.search);
+  return urlParams.get('category') || 'fruits'; // Default to fruits if no category
+}
+
+function getCategoryTitle(category) {
+  const categoryTitles = {
+    fruits: "水果 (Fruits)",
+    vegetables: "蔬菜 (Vegetables)", 
+    animals: "动物 (Animals)",
+    nature: "自然 (Nature)"
+  };
+  return categoryTitles[category] || "Category";
+}
+
+function loadCategory(category = null){
+  if (category) {
+    currentCategory = category;
+    // Update URL without page reload
+    const newUrl = `${window.location.pathname}?category=${category}`;
+    window.history.replaceState({}, '', newUrl);
+  } else {
+    currentCategory = getCategory();
+  }
+  
+  const items = DATA[currentCategory] || [];
+
+  document.getElementById("categoryTitle").textContent = getCategoryTitle(currentCategory);
+
+  // Update active category button
+  document.querySelectorAll('.category-btn').forEach(btn => {
+    btn.classList.remove('active');
+    if (btn.textContent.toLowerCase() === currentCategory) {
+      btn.classList.add('active');
+    }
+  });
+
+  document.getElementById("itemGrid").innerHTML = items.map(i => `
+    <div class="item-card">
+      <div style="font-size:2rem;">${i.icon}</div>
+      <div class="hanzi">${i.char}</div>
+      <div class="pinyin">${i.pinyin}</div>
+      <div class="english">${i.english}</div>
+      <button class="speak-btn" onclick="speak('${i.char}', '${currentCategory}')">🔊 Speak</button>
+    </div>
+  `).join("");
+}
+
+function changeCategory(category) {
+  loadCategory(category);
+}
+
+function speak(chineseChar, category){
+  const utter = new SpeechSynthesisUtterance(chineseChar);
+  utter.lang = "zh-CN";
+  speechSynthesis.speak(utter);
+  
+  trackWordInteraction(category);
+}
+
+function trackWordInteraction(category) {
+  // Use a more specific key to track individual interactions
+  const interactionKey = `word_interaction_${category}_${new Date().toDateString()}`;
+  let interactions = parseInt(sessionStorage.getItem(interactionKey) || '0');
+  
+  interactions++;
+  sessionStorage.setItem(interactionKey, interactions.toString());
+  
+  // Award progress for every 2 interactions to prevent overcounting
+  if (interactions % 2 === 0 && typeof updateProgress === 'function') {
+    updateProgress('level2', category, 1);
+  }
+}
+
+function goBack(){
+  window.location.href = "chinese.html";
+}
+
+// Ensure the page loads content on DOM ready
+document.addEventListener('DOMContentLoaded', function() {
+  loadCategory();
+});
+</script>
+<script src="script.js"></script>
+<script src="chprogress.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#58CC02">
+  <title>LinguaKids - Hindi Games</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700&family=Quicksand:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    body, html { 
+      margin: 0; 
+      padding: 0; 
+      font-family: 'Quicksand', sans-serif; 
+      background:#f6f8ff; 
+      overflow-x: hidden;
+    }
+
+    h2 { 
+      text-align:center; 
+      color:#58cc02; 
+      font-family:'Baloo 2', cursive; 
+    }
+
+    .game-container {
+      max-width: 800px;
+      margin: 20px auto;
+      padding: 20px;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    .question {
+      font-size: 1.5rem;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .options {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+      margin: 20px 0;
+    }
+
+    .option {
+      padding: 15px;
+      background: #f0f4ff;
+      border: 2px solid #d0d8ff;
+      border-radius: 8px;
+      cursor: pointer;
+      text-align: center;
+      font-size: 1.2rem;
+      transition: all 0.3s;
+    }
+
+    .option:hover {
+      background: #e0e8ff;
+      transform: translateY(-2px);
+    }
+
+    .option.correct {
+      background: #d4edda;
+      border-color: #c3e6cb;
+    }
+
+    .option.incorrect {
+      background: #f8d7da;
+      border-color: #f5c6cb;
+    }
+
+    .btn {
+      background: linear-gradient(to right,#58cc02,#1cb0f6);
+      border: none; 
+      color: white; 
+      padding: 10px 20px; 
+      border-radius: 50px;
+      font-family: 'Baloo 2', cursive; 
+      cursor: pointer; 
+      margin: 10px 5px;
+      font-size: 1rem;
+    }
+
+    .score {
+      text-align: center;
+      font-size: 1.2rem;
+      margin: 15px 0;
+      font-weight: bold;
+    }
+
+    .result {
+      text-align: center;
+      font-size: 1.3rem;
+      margin: 20px 0;
+      padding: 15px;
+      border-radius: 8px;
+    }
+
+    .result.correct {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .result.incorrect {
+      background: #f8d7da;
+      color: #721c24;
+    }
+
+    /* Match game specific styles */
+    .drop-zone {
+      font-size: 2rem;
+      border: 2px dashed #ccc;
+      border-radius: 10px;
+      padding: 10px;
+      min-height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 5px;
+      transition: all 0.3s;
+    }
+    
+    .draggable-word {
+      padding: 10px 15px;
+      margin: 5px;
+      cursor: grab;
+      user-select: none;
+      transition: all 0.3s;
+      background: linear-gradient(to right,#58cc02,#1cb0f6);
+      color: white;
+      border-radius: 8px;
+      font-family: 'Baloo 2', cursive;
+    }
+    
+    .draggable-word:active {
+      cursor: grabbing;
+    }
+    
+    .match-container {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    
+    .pictures-container, .words-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+    }
+    
+    .completion-message {
+      background: #e8f5e9;
+      border-radius: 12px;
+      padding: 20px;
+      margin: 20px 0;
+      border: 2px solid #58cc02;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #58cc02;
+      color: white;
+      padding: 15px 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transform: translateY(100px);
+      opacity: 0;
+      transition: transform 0.3s, opacity 0.3s;
+    }
+    
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    @media (max-width: 600px) {
+      .options {
+        grid-template-columns: 1fr;
+      }
+      .pictures-container, .words-container {
+        flex-direction: column;
+        align-items: center;
+      }
+      .drop-zone, .draggable-word {
+        margin: 5px 0;
+        width: 100%;
+        max-width: 200px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <button onclick="goBack()" class="btn">Back</button>
+  <h2 id="gameTitle">Hindi Learning Games</h2>
+  <div id="gameContainer" class="game-container"></div>
+
+  <div id="achievementToast" class="toast" style="display: none;">
+    <i class="fas fa-check-circle"></i>
+    <div>
+      <div id="toastTitle">Great job!</div>
+      <div id="toastDesc">Progress saved.</div>
+    </div>
+  </div>
+
+<script>
+// === DATA CONSTANTS ===
+const VOWELS_LENGTH = 12;
+const CONSONANTS_LENGTH = 37;
+const NUMBERS_1_TO_100_LENGTH = 100;
+const LEVEL2_CATEGORY_LENGTH = 10;
+const LEVEL3_CATEGORY_LENGTH = 10;
+const GAMES_LENGTHS = { 'fill-blanks': 5, 'match-words': 2, 'count-apples': 5 };
+
+// === CORE PROGRESS AND STREAK LOGIC (SELF-CONTAINED) ===
+function initHindiProgress() {
+  let progress = JSON.parse(localStorage.getItem('linguaKidsHindiProgress'));
+  if (!progress) {
+    const defaultProgress = {
+      level1: { alphabets: { completed: 0, total: VOWELS_LENGTH + CONSONANTS_LENGTH }, numbers: { completed: 0, total: NUMBERS_1_TO_100_LENGTH }},
+      level2: { fruits: { completed: 0, total: LEVEL2_CATEGORY_LENGTH }, vegetables: { completed: 0, total: LEVEL2_CATEGORY_LENGTH }, animals: { completed: 0, total: LEVEL2_CATEGORY_LENGTH }, birds: { completed: 0, total: LEVEL2_CATEGORY_LENGTH }, vehicles: { completed: 0, total: LEVEL2_CATEGORY_LENGTH }, colors: { completed: 0, total: LEVEL2_CATEGORY_LENGTH }},
+      level3: { greetings: { completed: 0, total: LEVEL3_CATEGORY_LENGTH }, activities: { completed: 0, total: LEVEL3_CATEGORY_LENGTH }, questions: { completed: 0, total: LEVEL3_CATEGORY_LENGTH }},
+      games: { 'fill-blanks': { completed: 0, total: GAMES_LENGTHS['fill-blanks'] }, 'match-words': { completed: 0, total: GAMES_LENGTHS['match-words'] }, 'count-apples': { completed: 0, total: GAMES_LENGTHS['count-apples'] }},
+      achievements: { firstSteps: false, alphabetMaster: false, numberWhiz: false, wordExpert: false, sentenceBuilder: false, gameChampion: false, weekStreak: false, monthStreak: false },
+      streak: { count: 0, lastDate: null }, sessionDate: null
+    };
+    localStorage.setItem('linguaKidsHindiProgress', JSON.stringify(defaultProgress));
+  }
+}
+
+function updateHindiStreak() {
+  const progress = JSON.parse(localStorage.getItem('linguaKidsHindiProgress'));
+  if (!progress) return;
+  const today = new Date().toDateString();
+  if (progress.sessionDate !== today) {
+    const lastDate = progress.streak.lastDate ? new Date(progress.streak.lastDate) : null;
+    const todayDate = new Date();
+    if (lastDate) {
+      const diffTime = todayDate.getTime() - lastDate.getTime();
+      const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+      if (diffDays === 1) { progress.streak.count++; } 
+      else if (diffDays > 1) { progress.streak.count = 1; }
+    } else { progress.streak.count = 1; }
+    progress.streak.lastDate = today;
+    progress.sessionDate = today;
+    localStorage.setItem('linguaKidsHindiProgress', JSON.stringify(progress));
+  }
+}
+
+function updateHindiProgress(level, category, increment = 1, itemIdentifier = null) {
+  const progress = JSON.parse(localStorage.getItem('linguaKidsHindiProgress'));
+  if (!progress || !progress[level] || !progress[level][category]) return false;
+  const today = new Date().toDateString();
+  const sessionKey = itemIdentifier ? `${level}_${category}_${itemIdentifier}_${today}` : null;
+  if (sessionKey && sessionStorage.getItem(sessionKey)) { return false; }
+  if (progress[level][category].completed < progress[level][category].total) {
+    progress[level][category].completed = Math.min(progress[level][category].completed + increment, progress[level][category].total);
+  } else { return false; }
+  localStorage.setItem('linguaKidsHindiProgress', JSON.stringify(progress));
+  if (sessionKey) { sessionStorage.setItem(sessionKey, 'true'); }
+  updateHindiStreak();
+  showToast("बहुत बढ़िया!", "प्रगति दर्ज हुई (Progress saved!)");
+  return true;
+}
+
+function showToast(title, description) {
+  const toast = document.getElementById("achievementToast");
+  if (!toast) return;
+  toast.style.display = 'flex';
+  toast.querySelector("#toastTitle").textContent = title;
+  toast.querySelector("#toastDesc").textContent = description;
+  toast.classList.add("show");
+  setTimeout(() => { 
+      toast.classList.remove("show");
+      setTimeout(() => { toast.style.display = 'none'; }, 300);
+  }, 3000);
+}
+
+
+// === PAGE-SPECIFIC GAME LOGIC ===
+const HINDI_NUMBERS = { 1: "१", 2: "२", 3: "३", 4: "४", 5: "५", 6: "६", 7: "७", 8: "८", 9: "९", 10: "१०" };
+
+const GAMES = {
+  'fill-blanks': {
+    title: "Fill in the Blanks",
+    questions: [
+      { question: "सेब का रंग ___ है। (Apple is ___)", options: ["लाल", "नीला", "हरा", "पीला"], correct: 0, hint: "🔴" },
+      { question: "आकाश का रंग ___ है। (Sky is ___)", options: ["लाल", "नीला", "हरा", "पीला"], correct: 1, hint: "☀️" },
+      { question: "पेड़ का रंग ___ है। (Tree is ___)", options: ["लाल", "नीला", "हरा", "पीला"], correct: 2, hint: "🌳" },
+      { question: "केला ___ है। (Banana is ___)", options: ["लाल", "नीला", "हरा", "पीला"], correct: 3, hint: "🍌" },
+      { question: "सूरज ___ है। (Sun is ___)", options: ["लाल", "नीला", "पीला", "सफेद"], correct: 2, hint: "🌞" }
+    ]
+  },
+  'match-words': {
+    title: "Match Words with Pictures",
+    rounds: [
+      [
+        { hindi: "सेब", english: "Apple", emoji: "🍎" }, { hindi: "केला", english: "Banana", emoji: "🍌" },
+        { hindi: "गाड़ी", english: "Car", emoji: "🚗" }, { hindi: "कुत्ता", english: "Dog", emoji: "🐶" },
+        { hindi: "किताब", english: "Book", emoji: "📖" }
+      ],
+      [
+        { hindi: "फूल", english: "Flower", emoji: "🌹" }, { hindi: "बिल्ली", english: "Cat", emoji: "🐱" },
+        { hindi: "सूरज", english: "Sun", emoji: "☀️" }, { hindi: "पेड़", english: "Tree", emoji: "🌳" },
+        { hindi: "मछली", english: "Fish", emoji: "🐟" }
+      ]
+    ]
+  },
+  'count-apples': {
+    title: "Count the Apples",
+    maxCount: 10
+  }
+};
+
+const urlParams = new URLSearchParams(window.location.search);
+const gameType = urlParams.get('game');
+
+let currentGame = null;
+let currentQuestion = 0;
+let score = 0;
+let currentRound = 0;
+let roundScore = 0;
+
+function initGame() {
+  initHindiProgress(); // Initialize progress system
+  
+  if (gameType && GAMES[gameType]) {
+    currentGame = GAMES[gameType];
+    document.getElementById('gameTitle').textContent = currentGame.title;
+    switch(gameType) {
+      case 'fill-blanks': startFillBlanksGame(); break;
+      case 'match-words': startMatchGame(); break;
+      case 'count-apples': startCountApplesGame(); break;
+      default: showGameSelection();
+    }
+  } else {
+    showGameSelection();
+  }
+}
+
+function showGameSelection() {
+  document.getElementById('gameContainer').innerHTML = `
+    <div style="text-align: center;"><h3>Choose a Game</h3>
+      <button class="btn" onclick="loadGame('fill-blanks')">Fill in the Blanks</button>
+      <button class="btn" onclick="loadGame('match-words')">Match Words</button>
+      <button class="btn" onclick="loadGame('count-apples')">Count Apples</button>
+    </div>`;
+}
+
+function loadGame(type) {
+  window.location.href = 'hingames.html?game=' + type;
+}
+
+function startFillBlanksGame() {
+  if (currentQuestion >= currentGame.questions.length) {
+    showFinalScore();
+    return;
+  }
+  const question = currentGame.questions[currentQuestion];
+  document.getElementById('gameContainer').innerHTML = `
+    <div class="score">Score: ${score}/${currentGame.questions.length}</div>
+    <div class="question">${question.question}</div>
+    <div class="options">${question.options.map((option, index) => `<div class="option" onclick="checkAnswer(${index})">${option}</div>`).join('')}</div>
+    <div style="text-align: center; margin-top: 20px;"><button class="btn" onclick="showHint()">Hint: ${question.hint}</button></div>`;
+}
+
+function checkAnswer(selectedIndex) {
+  const question = currentGame.questions[currentQuestion];
+  const options = document.querySelectorAll('.option');
+  options.forEach((option, index) => {
+    if (index === question.correct) { option.classList.add('correct'); } 
+    else if (index === selectedIndex) { option.classList.add('incorrect'); }
+    option.style.pointerEvents = 'none';
+  });
+  if (selectedIndex === question.correct) {
+    score++;
+    const identifier = `${gameType}_${currentQuestion}`;
+    updateHindiProgress('games', gameType, 1, identifier);
+  }
+  setTimeout(() => { currentQuestion++; startFillBlanksGame(); }, 2000);
+}
+
+function showHint() {
+  alert('Hint: ' + currentGame.questions[currentQuestion].hint);
+}
+
+function startMatchGame() {
+  if (currentRound >= currentGame.rounds.length) {
+    showMatchCompletion();
+    return;
+  }
+  const roundData = currentGame.rounds[currentRound];
+  roundScore = 0;
+  document.getElementById('gameContainer').innerHTML = `
+    <div class="score">Round ${currentRound + 1}: Match Hindi words with pictures</div>
+    <div class="match-container">
+      <div class="pictures-container">${roundData.map(item => `<div class="drop-zone" data-answer="${item.hindi}">${item.emoji}</div>`).join('')}</div>
+      <div class="words-container">${shuffleArray(roundData.map(item => item.hindi)).map(word => `<div class="draggable-word" draggable="true">${word}</div>`).join('')}</div>
+    </div>
+    <p id="matchResult" style="text-align:center; margin-top:15px; font-weight:bold;"></p>
+    <div style="text-align:center; margin-top:20px;">
+      <button class="btn" onclick="restartMatchGame()">Restart Round</button>
+      <button class="btn" onclick="goBack()">Back to Menu</button>
+    </div>`;
+  initDragAndDrop();
+}
+
+function initDragAndDrop() {
+  const draggables = document.querySelectorAll('.draggable-word');
+  const dropZones = document.querySelectorAll('.drop-zone');
+  draggables.forEach(drag => {
+    drag.addEventListener('dragstart', e => { e.dataTransfer.setData('text/plain', drag.textContent); });
+    drag.addEventListener('touchstart', e => {
+      drag.style.position = 'absolute'; drag.style.zIndex = '1000'; e.preventDefault();
+    }, {passive: false});
+    drag.addEventListener('touchmove', e => {
+      const touch = e.touches[0];
+      drag.style.left = touch.clientX - (drag.offsetWidth / 2) + 'px';
+      drag.style.top = touch.clientY - (drag.offsetHeight / 2) + 'px';
+      e.preventDefault();
+    }, {passive: false});
+    drag.addEventListener('touchend', e => {
+      const touch = e.changedTouches[0];
+      const dropZone = document.elementsFromPoint(touch.clientX, touch.clientY).find(el => el.classList.contains('drop-zone'));
+      if (dropZone) { handleDrop(drag.textContent.trim(), dropZone); }
+      drag.style.position = ''; drag.style.zIndex = '';
+      e.preventDefault();
+    }, {passive: false});
+  });
+  dropZones.forEach(drop => {
+    drop.addEventListener('dragover', e => { e.preventDefault(); });
+    drop.addEventListener('drop', e => { e.preventDefault(); const word = e.dataTransfer.getData('text/plain'); handleDrop(word, drop); });
+  });
+}
+
+function handleDrop(word, drop) {
+  const trimmedWord = word.trim().replace('❌', '').replace('✅', '');
+  if (trimmedWord === drop.dataset.answer) {
+    drop.innerHTML += ' ✅'; roundScore++;
+    document.querySelectorAll('.draggable-word').forEach(d => { if (d.textContent.trim() === trimmedWord) d.remove(); });
+    document.getElementById('matchResult').textContent = `Correct! Score: ${roundScore}/${currentGame.rounds[currentRound].length}`;
+    if (roundScore === currentGame.rounds[currentRound].length) {
+      const identifier = `${gameType}_${currentRound}`;
+      updateHindiProgress('games', gameType, 1, identifier);
+      document.getElementById('matchResult').textContent = `🎉 Round ${currentRound + 1} completed!`;
+      setTimeout(() => { currentRound++; startMatchGame(); }, 1500);
+    }
+  } else {
+    document.getElementById('matchResult').textContent = '❌ Wrong! Try again.';
+  }
+}
+
+function shuffleArray(array) {
+  for (let i = array.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [array[i], array[j]] = [array[j], array[i]]; }
+  return array;
+}
+
+function showMatchCompletion() {
+  document.getElementById('gameContainer').innerHTML = `
+    <div class="completion-message"><h3 style="color:#58cc02; margin-top:0;">🎉 Congratulations! 🎉</h3><p>You've completed all the word matching rounds!</p>
+      <button class="btn" onclick="restartMatchGame()">Play Again</button><button class="btn" onclick="goBack()">Back to Menu</button>
+    </div>`;
+}
+
+function restartMatchGame() {
+  currentRound = 0; roundScore = 0; startMatchGame();
+}
+
+function startCountApplesGame() {
+  if (currentQuestion >= 5) { showFinalScore(); return; }
+  const count = Math.floor(Math.random() * 10) + 1;
+  let options = [count];
+  while (options.length < 4) { const randomNum = Math.floor(Math.random() * 10) + 1; if (!options.includes(randomNum)) { options.push(randomNum); } }
+  options = shuffleArray(options);
+  document.getElementById('gameContainer').innerHTML = `
+    <div class="score">Count the Apples - Question ${currentQuestion + 1}/5</div><div class="score">Score: ${score}</div>
+    <div class="question">कितने सेब हैं? (How many apples?)</div><div style="text-align: center; font-size: 3rem; margin: 20px 0;">${'🍎'.repeat(count)}</div>
+    <div class="options">${options.map(num => `<div class="option" data-number="${num}" onclick="checkAppleCount(${num}, ${count})">${HINDI_NUMBERS[num]}</div>`).join('')}</div>
+    <div id="resultMessage" style="text-align:center; margin-top:15px; font-weight:bold;"></div>`;
+}
+
+function checkAppleCount(selected, actual) {
+  const options = document.querySelectorAll('.option');
+  const resultMessage = document.getElementById('resultMessage');
+  options.forEach(option => {
+    const num = parseInt(option.getAttribute('data-number'));
+    if (num === actual) { option.classList.add('correct'); } else if (num === selected) { option.classList.add('incorrect'); }
+    option.style.pointerEvents = 'none';
+  });
+  if (selected === actual) {
+    score++;
+    resultMessage.innerHTML = '<div class="result correct">✅ सही! बहुत अच्छे! (Correct! Very good!)</div>';
+    const identifier = `${gameType}_${currentQuestion}`;
+    updateHindiProgress('games', gameType, 1, identifier);
+  } else {
+    resultMessage.innerHTML = `<div class="result incorrect">❌ गलत! सही उत्तर है: ${HINDI_NUMBERS[actual]} (Wrong! Correct answer is: ${HINDI_NUMBERS[actual]})</div>`;
+  }
+  setTimeout(() => { currentQuestion++; startCountApplesGame(); }, 2000);
+}
+
+function showFinalScore() {
+  document.getElementById('gameContainer').innerHTML = `
+    <div style="text-align: center;"><h3>Game Completed!</h3><div class="score">Final Score: ${score}/5</div><div style="font-size: 4rem; margin: 20px 0;">🎉</div>
+      <button class="btn" onclick="restartGame()">Play Again</button><button class="btn" onclick="goBack()">Back to Menu</button>
+    </div>`;
+}
+
+function restartGame() {
+  currentQuestion = 0; score = 0; currentRound = 0; roundScore = 0; initGame();
+}
+
+function goBack() {
+  window.location.href = 'hindi.html';
+}
+
+document.addEventListener('DOMContentLoaded', initGame);
+</script>
+<script src="script.js"></script>
+
+</body>
+</html>

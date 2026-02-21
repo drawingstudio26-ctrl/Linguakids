@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#58CC02">
+  <title>LinguaKids - Level 2</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700&family=Quicksand:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  body, html { 
+    margin: 0; 
+    padding: 0; 
+    font-family: 'Quicksand', sans-serif; 
+    background:#f6f8ff; 
+    overflow-x: hidden; /* prevent horizontal scroll */
+  }
+
+  h2 { 
+    text-align:center; 
+    color:#58cc02; 
+    font-family:'Baloo 2', cursive; 
+  }
+
+  /* Grid: 5 items per row on desktop */
+  .item-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr); /* 5 per row */
+    gap: 20px;
+    margin: 20px auto;
+    padding: 0 15px;  /* safe padding so items don't touch edges */
+    max-width: 1200px; /* keeps grid inside desktop */
+    box-sizing: border-box;
+  }
+
+  .item-card {
+    background: white;
+    padding: 15px;
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .item-card div { margin: 5px 0; }
+
+  .item-card img {
+    width: 50px;
+    height: 50px;
+    object-fit: contain;
+  }
+
+  .speak-btn {
+    background: linear-gradient(to right,#58cc02,#1cb0f6);
+    border: none; 
+    color: white; 
+    padding: 6px 12px;
+    border-radius: 50px; 
+    cursor: pointer;
+    font-size: 0.9rem; 
+    font-family: 'Baloo 2', cursive;
+  }
+  .speak-btn:hover { opacity: 0.9; }
+
+  /* Back button */
+  .btn {
+    background: linear-gradient(to right,#58cc02,#1cb0f6);
+    border: none; 
+    color: white; 
+    padding: 8px 20px; 
+    border-radius: 50px;
+    font-family: 'Baloo 2', cursive; 
+    cursor: pointer; 
+    margin: 10px 5px;
+  }
+  .btn:active { transform: scale(0.96); }
+
+  /* Tablet / medium screens */
+  @media (max-width: 900px) {
+    .item-grid {
+      grid-template-columns: repeat(3, 1fr); /* 3 per row */
+      max-width: 100%;
+      padding: 0 10px; /* prevent cutoff */
+    }
+  }
+
+  /* Mobile */
+  @media (max-width: 600px) {
+    .item-grid {
+      grid-template-columns: repeat(2, 1fr); /* 2 per row */
+      max-width: 100%;
+      padding: 0 8px; /* keep boxes inside */
+    }
+  }
+</style>
+</head>
+<body>
+  <button onclick="goBack()" class="btn">Back</button>
+  <h2 id="categoryTitle"></h2>
+  <div id="content" class="item-grid"></div>
+
+<script>
+const DATA = {
+  fruits: [
+    {name: "Apfel", icon: "🍎", english: "Apple"},
+    {name: "Banane", icon: "🍌", english: "Banana"},
+    {name: "Orange", icon: "🍊", english: "Orange"},
+    {name: "Mango", icon: "🥭", english: "Mango"},
+    {name: "Trauben", icon: "🍇", english: "Grapes"},
+    {name: "Ananas", icon: "🍍", english: "Pineapple"},
+    {name: "Erdbeere", icon: "🍓", english: "Strawberry"},
+    {name: "Wassermelone", icon: "🍉", english: "Watermelon"},
+    {name: "Kirsche", icon: "🍒", english: "Cherry"},
+    {name: "Pfirsich", icon: "🍑", english: "Peach"},
+    {name: "Birne", icon: "🍐", english: "Pear"},
+{name: "Kiwi", icon: "🥝", english: "Kiwi"},
+{name: "Zitrone", icon: "🍋", english: "Lemon"},
+{name: "Melone", icon: "🍈", english: "Melon"},
+{name: "Kokosnuss", icon: "🥥", english: "Coconut"},
+{name: "Granatapfel", icon: "🍎", english: "Pomegranate"},
+{name: "Aprikose", icon: "🍑", english: "Apricot"},
+  ],
+  vegetables: [
+    {name: "Karotte", icon: "🥕", english: "Carrot"},
+    {name: "Kartoffel", icon: "🥔", english: "Potato"},
+    {name: "Tomate", icon: "🍅", english: "Tomato"},
+    {name: "Kohl", icon: "🥬", english: "Cabbage"},
+    {name: "Mais", icon: "🌽", english: "Corn"},
+    {name: "Zwiebel", icon: "🧅", english: "Onion"},
+    {name: "Knoblauch", icon: "🧄", english: "Garlic"},
+    {name: "Brokkoli", icon: "🥦", english: "Broccoli"},
+    {name: "Gurke", icon: "🥒", english: "Cucumber"},
+    {name: "Paprika", icon: "🌶️", english: "Pepper"},
+    {name: "Spinat", icon: "🥬", english: "Spinach"},
+{name: "Pilz", icon: "🍄", english: "Mushroom"},
+{name: "Kürbis", icon: "🎃", english: "Pumpkin"},
+{name: "Sellerie", icon: "🥬", english: "Celery"},
+{name: "Aubergine", icon: "🍆", english: "Eggplant"},
+{name: "Blumenkohl", icon: "🥦", english: "Cauliflower"},
+{name: "Fenchel", icon: "🌿", english: "Fennel"}
+  ],
+  animals: [
+    {name: "Löwe", icon: "🦁", english: "Lion"},
+    {name: "Tiger", icon: "🐯", english: "Tiger"},
+    {name: "Elefant", icon: "🐘", english: "Elephant"},
+    {name: "Hund", icon: "🐶", english: "Dog"},
+    {name: "Katze", icon: "🐱", english: "Cat"},
+    {name: "Pferd", icon: "🐴", english: "Horse"},
+    {name: "Affe", icon: "🐵", english: "Monkey"},
+    {name: "Kuh", icon: "🐄", english: "Cow"},
+    {name: "Hase", icon: "🐇", english: "Rabbit"},
+    {name: "Schaf", icon: "🐑", english: "Sheep"},
+    {name: "Fuchs", icon: "🦊", english: "Fox"},
+{name: "Wolf", icon: "🐺", english: "Wolf"},
+{name: "Schwein", icon: "🐷", english: "Pig"},
+{name: "Bär", icon: "🐻", english: "Bear"},
+{name: "Kamel", icon: "🐫", english: "Camel"},
+{name: "Zebra", icon: "🦓", english: "Zebra"},
+{name: "Giraffe", icon: "🦒", english: "Giraffe"},
+{name: "Känguru", icon: "🦘", english: "Kangaroo"},
+{name: "Nilpferd", icon: "🦛", english: "Hippo"},
+{name: "Panda", icon: "🐼", english: "Panda"}
+  ],
+  birds: [
+    {name: "Papagei", icon: "🦜", english: "Parrot"},
+    {name: "Krähe", icon: "🐦", english: "Crow"},
+    {name: "Pfau", icon: "🦚", english: "Peacock"},
+    {name: "Sperling", icon: "🐤", english: "Sparrow"},
+    {name: "Eule", icon: "🦉", english: "Owl"},
+    {name: "Pinguin", icon: "🐧", english: "Penguin"},
+    {name: "Ente", icon: "🦆", english: "Duck"},
+    {name: "Adler", icon: "🦅", english: "Eagle"},
+    {name: "Taube", icon: "🕊️", english: "Dove"},
+    {name: "Flamingo", icon: "🦩", english: "Flamingo"},
+    {name: "Kanarienvogel", icon: "🐤", english: "Canary"},
+{name: "Schwan", icon: "🦢", english: "Swan"},
+{name: "Geier", icon: "🦅", english: "Vulture"},
+{name: "Specht", icon: "🐦", english: "Woodpecker"},
+{name: "Huhn", icon: "🐔", english: "Hen"}
+  ],
+  vehicles: [
+    {name: "Auto", icon: "🚗", english: "Car"},
+    {name: "Bus", icon: "🚌", english: "Bus"},
+    {name: "Zug", icon: "🚆", english: "Train"},
+    {name: "Flugzeug", icon: "✈️", english: "Airplane"},
+    {name: "Fahrrad", icon: "🚲", english: "Bike"},
+    {name: "LKW", icon: "🚚", english: "Truck"},
+    {name: "Schiff", icon: "🚢", english: "Ship"},
+    {name: "Helikopter", icon: "🚁", english: "Helicopter"},
+    {name: "Taxi", icon: "🚖", english: "Taxi"},
+    {name: "Traktor", icon: "🚜", english: "Tractor"},
+    {name: "Motorrad", icon: "🏍️", english: "Motorcycle"},
+{name: "Roller", icon: "🛵", english: "Scooter"},
+{name: "Rakete", icon: "🚀", english: "Rocket"},
+{name: "U-Boot", icon: "🚢", english: "Submarine"},
+{name: "Polizeiauto", icon: "🚓", english: "Police Car"},
+{name: "Feuerwehrauto", icon: "🚒", english: "Fire Truck"},
+{name: "Ambulanz", icon: "🚑", english: "Ambulance"},
+{name: "Bagger", icon: "🚧", english: "Excavator"},
+{name: "Kran", icon: "🏗️", english: "Crane"},
+{name: "Boot", icon: "⛵", english: "Boat"}
+  ],
+  colors: [
+    {name: "Rot", icon: "🔴", english: "Red"},
+    {name: "Blau", icon: "🔵", english: "Blue"},
+    {name: "Grün", icon: "🟢", english: "Green"},
+    {name: "Gelb", icon: "🟡", english: "Yellow"},
+    {name: "Lila", icon: "🟣", english: "Purple"},
+    {name: "Orange", icon: "🟠", english: "Orange"},
+    {name: "Braun", icon: "🟤", english: "Brown"},
+    {name: "Schwarz", icon: "⚫", english: "Black"},
+    {name: "Weiß", icon: "⚪", english: "White"},
+    {name: "Rosa", icon: "🌸", english: "Pink"}
+  ]
+};
+
+function getCategory(){
+  const params = new URLSearchParams(window.location.search);
+  return params.get("category");
+}
+
+function loadCategory(){
+  const cat = getCategory();
+  const items = DATA[cat] || [];
+
+  // REMOVED: The unnecessary and erroneous call to updateLevel2WordProgress(cat, index) here.
+
+  document.getElementById("categoryTitle").textContent =
+    cat ? "Kategorie: " + cat.charAt(0).toUpperCase() + cat.slice(1) + " (Category: " + cat.charAt(0).toUpperCase() + cat.slice(1) + ")" : "Kategorie (Category)";
+  
+  document.getElementById("content").innerHTML = items.map((i, index) => `
+  <div class="item-card">
+    <div style="font-size:2rem;">
+      ${i.icon.includes("images/") 
+        ? `<img src="${i.icon}" alt="${i.name}">` 
+        : i.icon}
+    </div>
+    <div style="font-weight:bold;">${i.name}</div>
+    <div style="font-size:0.8rem; color:#666;">${i.english}</div>
+    <button class="speak-btn" onclick="speak('${i.name}', '${cat}', ${index})">🔊</button>
+  </div>
+`).join("");
+}
+
+function speak(text, category, index){
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.lang = "de-DE";
+  speechSynthesis.speak(utter);
+  
+  // Track progress when speaker icon is clicked
+  if (typeof updateLevel2WordProgress === 'function') {
+    updateLevel2WordProgress(category, index);
+  }
+}
+
+function goBack(){
+  window.location.href = "german.html";
+}
+
+loadCategory();
+
+</script>
+<script src="grprogress.js"></script>
+<script src="script.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="mr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#58CC02">
+  <title>LinguaKids - Marathi</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700&family=Quicksand:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+    body {
+        font-family: 'Quicksand', Arial, sans-serif;
+        background: linear-gradient(135deg, #e0eaff 0%, #f6f0ff 100%);
+        margin: 0;
+        padding: 0;
+    }
+    
+    #app { 
+        max-width: 1000px; 
+        margin: auto; 
+        padding: 15px; 
+        position: relative;
+        padding-top: 50px;
+    }
+    
+    h2 { 
+        text-align: center; 
+        color: #58cc02; 
+        font-family: 'Baloo 2', cursive; 
+    }
+    
+    .sub-container, .letters-grid, .numbers-grid {
+        display: grid; 
+        grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+        gap: 15px; 
+        margin-top: 20px;
+    }
+    
+    .sub-card, .letter-card, .number-card {
+        background: white; 
+        padding: 20px; 
+        border-radius: 12px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05); 
+        text-align: center;
+        cursor: pointer; 
+        transition: transform 0.3s, box-shadow 0.3s;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        white-space: normal;
+    }
+    
+    .letter-card, .number-card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-height: 140px;
+        justify-content: space-between;
+    }
+    
+    .sub-card:hover, .letter-card:hover, .number-card:hover {
+        transform: translateY(-5px); 
+        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .main-char { 
+        font-size: 2rem; 
+        font-weight: bold; 
+        color: #58cc02; 
+    }
+    
+    .small-char { 
+        font-size: 1.2rem; 
+        color: #1cb0f6; 
+    }
+    
+    .example { 
+        margin-top: 5px; 
+        font-size: 1rem; 
+        line-height: 1.2;
+    }
+    
+    .letter-card .example, .number-card .example {
+        font-size: 0.9rem;
+        max-height: 2.4em;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        line-clamp: 2;
+    }
+    
+    .btn {
+        background: linear-gradient(to right, #58cc02, #1cb0f6);
+        border: none; 
+        color: white; 
+        padding: 8px 20px; 
+        border-radius: 50px;
+        font-family: 'Baloo 2', cursive; 
+        cursor: pointer; 
+        margin: 10px 5px;
+        transition: transform 0.2s;
+    }
+    
+    .btn:active { 
+        transform: scale(0.96); 
+    }
+    
+    .lesson-controls {
+        display: flex; 
+        justify-content: center; 
+        gap: 10px; 
+        margin-top: 15px;
+        flex-wrap: wrap;
+    }
+    
+    canvas {
+        border: 2px solid #ccc; 
+        border-radius: 12px; 
+        background: #fff;
+        display: block; 
+        margin: 15px auto;
+    }
+    
+    .lesson-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        margin-top: 20px;
+    }
+    
+    .lesson-container .main-char {
+        font-size: 3rem;
+    }
+    
+    .lesson-container .example {
+        font-size: 1.3rem;
+        margin: 10px 0;
+    }
+    
+    .trace-area {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin: 10px 0;
+    }
+    
+    .clear-btn {
+        background: #ff6b6b;
+        padding: 5px 15px;
+        font-size: 0.9rem;
+        border-radius: 8px;
+        margin-top: 8px;
+        transition: background 0.3s;
+    }
+    
+    .clear-btn:hover {
+        background: #ff5252;
+    }
+    
+    .sub-card h3 {
+        font-size: 1.1rem;
+        margin: 5px 0;
+    }
+    
+    .sub-card p {
+        font-size: 0.9rem;
+        margin: 0;
+        line-height: 1.2;
+    }
+    
+    .sound-btn {
+        background: #1cb0f6;
+        border: none;
+        border-radius: 50%;
+        width: 36px;
+        height: 36px;
+        color: white;
+        font-size: 1rem;
+        cursor: pointer;
+        margin-top: 8px;
+        transition: all 0.2s;
+    }
+    
+    .sound-btn:hover {
+        background: #0a9bd8;
+        transform: scale(1.05);
+    }
+    
+    .sound-btn:active {
+        transform: scale(0.95);
+    }
+    
+    .tab-container {
+        display: flex;
+        justify-content: center;
+        margin: 20px 0;
+        flex-wrap: wrap;
+    }
+    
+    .tab-btn {
+        background: #e0e0e0;
+        border: none;
+        padding: 10px 20px;
+        margin: 0 5px;
+        border-radius: 20px;
+        cursor: pointer;
+        font-family: 'Baloo 2', cursive;
+        transition: all 0.3s;
+    }
+    
+    .tab-btn.active {
+        background: linear-gradient(to right, #58cc02, #1cb0f6);
+        color: white;
+    }
+    
+    .tab-btn:hover:not(.active) {
+        background: #d0d0d0;
+    }
+    
+    .numbers-grid-100 {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+        gap: 10px;
+        margin-top: 20px;
+    }
+    
+    .number-card-100 {
+        background: white;
+        padding: 10px;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        text-align: center;
+        cursor: pointer;
+        transition: 0.3s;
+    }
+    
+    .number-card-100:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .number-card-100 .main-char {
+        font-size: 1.5rem;
+        margin-bottom: 5px;
+    }
+    
+    .number-card-100 .small-char {
+        font-size: 0.9rem;
+        color: #1cb0f6;
+    }
+    
+    .pagination {
+        display: flex;
+        justify-content: center;
+        margin: 20px 0;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+    
+    .pagination-btn {
+        background: #e0e0e0;
+        border: none;
+        padding: 8px 15px;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: all 0.3s;
+        font-size: 0.9rem;
+    }
+    
+    .pagination-btn.active {
+        background: #58cc02;
+        color: white;
+    }
+    
+    .pagination-btn:hover:not(.active) {
+        background: #d0d0d0;
+    }
+    
+    #globalBack, .back-btn-lesson {
+        position: fixed;
+        top: 15px;
+        left: 15px;
+        z-index: 1000;
+        margin: 0;
+        background: linear-gradient(to right, #58cc02, #1cb0f6);
+        border: none;
+        color: white;
+        padding: 8px 15px;
+        border-radius: 50px;
+        font-family: 'Baloo 2', cursive;
+        cursor: pointer;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    #globalBack:hover, .back-btn-lesson:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    }
+    
+    #globalBack:active, .back-btn-lesson:active {
+        transform: scale(0.95);
+    }
+    
+    .progress-indicator {
+        position: absolute;
+        top: 10px;
+        right: 15px;
+        background: #58cc02;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 15px;
+        font-size: 0.8rem;
+        font-family: 'Baloo 2', cursive;
+    }
+    
+    @media (max-width: 600px) {
+        .main-char { font-size: 1.5rem; } 
+        .small-char { font-size: 1rem; } 
+        .example { font-size: 0.9rem; }
+        
+        .sub-container {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        
+        .sub-card {
+            padding: 15px;
+        }
+        
+        .sub-card h3 { 
+            font-size: 1rem; 
+        }
+        
+        .sub-card p { 
+            font-size: 0.8rem; 
+        }
+        
+        #globalBack, .back-btn-lesson {
+            top: 10px;
+            left: 10px;
+            padding: 6px 12px;
+            font-size: 0.9rem;
+        }
+        
+        #app {
+            padding-top: 45px;
+        }
+        
+        .lesson-container .main-char {
+            font-size: 2.5rem;
+        }
+        
+        .lesson-container .example {
+            font-size: 1.1rem;
+        }
+        
+        .progress-indicator {
+            top: 5px;
+            right: 10px;
+            font-size: 0.7rem;
+            padding: 3px 8px;
+        }
+    }
+</style>
+</head>
+<body>
+
+<button id="globalBack" onclick="goBackHome()">
+   Back
+</button>
+<div id="app">
+  <div class="progress-indicator" id="progressIndicator">Progress: 0%</div>
+  <div id="learning-content"></div>
+</div>
+
+<script>
+// ===== PAGE-SPECIFIC DATA AND FUNCTIONS =====
+
+const VOWELS = [
+    {marathi:"अ", english:"a", word:"अननस (Pineapple 🍍)", pronunciation:"a"}, {marathi:"आ", english:"aa", word:"आई (Mother 👩‍👦)", pronunciation:"aa"}, {marathi:"इ", english:"i", word:"इमारत (Building 🏢)", pronunciation:"i"}, {marathi:"ई", english:"ee", word:"ईडलींबू (Lemon 🍋)", pronunciation:"ee"}, {marathi:"उ", english:"u", word:"उंदीर (Mouse 🐭)", pronunciation:"u"}, {marathi:"ऊ", english:"oo", word:"ऊस (Sugarcane 🎋)", pronunciation:"oo"}, {marathi:"ॠ", english:"rri", word:"ॠषी (Sage 🧙‍♂️)", pronunciation:"rru"}, {marathi:"ए", english:"e", word:"एडका (Ram 🐏)", pronunciation:"e"}, {marathi:"ऐ", english:"ai", word:"ऐरावत (Elephant 🐘)", pronunciation:"ai"}, {marathi:"ओ", english:"o", word:"ओठ (Lips 👄)", pronunciation:"o"}, {marathi:"औ", english:"au", word:"औषध (Medicine 💊)", pronunciation:"au"}, {marathi:"अं", english:"an", word:"अंगठी (Ring 💍)", pronunciation:"an"}, {marathi:"अः", english:"ah", word:"Ah! (Exclamation)", pronunciation:"ah"}
+];
+
+const CONSONANTS = [
+    {marathi:"क", english:"ka", word:"कमळ (Lotus 🌸)", pronunciation:"ka"}, {marathi:"ख", english:"kha", word:"खरबूज (Melon 🍈)", pronunciation:"kha"}, {marathi:"ग", english:"ga", word:"गवत (Grass 🌾)", pronunciation:"ga"}, {marathi:"घ", english:"gha", word:"घर (House 🏠)", pronunciation:"gha"}, {marathi:"ङ", english:"nga", word:"ङ (Velar nasal)", pronunciation:"nga"}, {marathi:"च", english:"cha", word:"चमचा (Spoon 🥄)", pronunciation:"cha"}, {marathi:"छ", english:"chha", word:"छत्री (Umbrella ☂️)", pronunciation:"chha"}, {marathi:"ज", english:"ja", word:"जहाज (Ship 🚢)", pronunciation:"ja"}, {marathi:"झ", english:"jha", word:"झगा (Dress 👗)", pronunciation:"jha"}, {marathi:"ञ", english:"nya", word:"ञ (Palatal nasal)", pronunciation:"nya"}, {marathi:"ट", english:"ta", word:"टरबूज (Watermelon 🍉)", pronunciation:"ta"}, {marathi:"ठ", english:"tha", word:"ठसा (Stamp ✉️)", pronunciation:"tha"}, {marathi:"ड", english:"da", word:"डब्बा (Tiffin 🍱)", pronunciation:"da"}, {marathi:"ढ", english:"dha", word:"ढग (Cloud ☁️)", pronunciation:"dha"}, {marathi:"ण", english:"na", word:"ण (Retroflex nasal)", pronunciation:"na"}, {marathi:"त", english:"ta", word:"तलवार (Sword ⚔️)", pronunciation:"ta"}, {marathi:"थ", english:"tha", word:"थवा (Flock 🐑)", pronunciation:"tha"}, {marathi:"द", english:"da", word:"दरवाजा (Door 🚪)", pronunciation:"da"}, {marathi:"ध", english:"dha", word:"धनुष्य (Bow 🏹)", pronunciation:"dha"}, {marathi:"न", english:"na", word:"नळ (Tap 🚰)", pronunciation:"na"}, {marathi:"प", english:"pa", word:"पतंग (Kite 🪁)", pronunciation:"pa"}, {marathi:"फ", english:"pha", word:"फणस (Jackfruit 🍈)", pronunciation:"pha"}, {marathi:"ब", english:"ba", word:"बदक (Duck 🦆)", pronunciation:"ba"}, {marathi:"भ", english:"bha", word:"भटजी (Priest 🙏)", pronunciation:"bha"}, {marathi:"म", english:"ma", word:"मगर (Crocodile 🐊)", pronunciation:"ma"}, {marathi:"य", english:"ya", word:"यज्ञ (Sacred ritual 🔥)", pronunciation:"ya"}, {marathi:"र", english:"ra", word:"रस्ता (Road 🛣️)", pronunciation:"ra"}, {marathi:"ल", english:"la", word:"लसूण (Garlic 🧄)", pronunciation:"la"}, {marathi:"व", english:"va", word:"वजन (Weight ⚖️)", pronunciation:"va"}, {marathi:"श", english:"sha", word:"शहामृग (Ostrich 🦩)", pronunciation:"sha"}, {marathi:"ष", english:"sha", word:"षट्कोण (Hexagon ⬢)", pronunciation:"sha"}, {marathi:"स", english:"sa", word:"ससा (Rabbit 🐇)", pronunciation:"sa"}, {marathi:"ह", english:"ha", word:"हरिण (Deer 🦌)", pronunciation:"ha"}, {marathi:"ळ", english:"la", word:"ळ (Retroflex lateral)", pronunciation:"la"}, {marathi:"क्ष", english:"ksha", word:"क्षत्रिय (Warrior ⚔️)", pronunciation:"ksha"}, {marathi:"ज्ञ", english:"gya", word:"ज्ञान (Knowledge 📚)", pronunciation:"gya"}
+];
+
+const NUMBERS = [
+    {marathi:"१", english:"1", word:"एक (One)", pronunciation:"ek"}, {marathi:"२", english:"2", word:"दोन (Two)", pronunciation:"don"}, {marathi:"३", english:"3", word:"तीन (Three)", pronunciation:"teen"}, {marathi:"४", english:"4", word:"चार (Four)", pronunciation:"chaar"}, {marathi:"५", english:"5", word:"पाच (Five)", pronunciation:"paach"}, {marathi:"६", english:"6", word:"सहा (Six)", pronunciation:"sahaa"}, {marathi:"७", english:"7", word:"सात (Seven)", pronunciation:"saat"}, {marathi:"८", english:"8", word:"आठ (Eight)", pronunciation:"aath"}, {marathi:"९", english:"9", word:"नऊ (Nine)", pronunciation:"nau"}, {marathi:"१०", english:"10", word:"दहा (Ten)", pronunciation:"dahaa"}
+];
+
+const MARATHI_NUMERALS = ["०", "१", "२", "३", "४", "५", "६", "७", "८", "९"];
+
+function generateMarathiNumber(num) {
+  if (num === 100) return "१००";
+  let result = "";
+  if (num >= 10) {
+    result += MARATHI_NUMERALS[Math.floor(num / 10)];
+  }
+  result += MARATHI_NUMERALS[num % 10];
+  return result;
+}
+
+const NUMBERS_1_TO_100 = Array.from({length: 100}, (_, i) => ({
+  marathi: generateMarathiNumber(i + 1),
+  english: (i + 1).toString()
+}));
+
+function speakText(text, lang = 'mr-IN') {
+  if ('speechSynthesis' in window) {
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = lang;
+    utterance.rate = 0.8;
+    window.speechSynthesis.speak(utterance);
+  }
+}
+
+// CORRECTED tracking functions that call the global functions from mrprogress.js
+function trackAlphabetProgress(type, index) {
+    const itemId = `${type}_${index}`; // Creates a unique ID like "vowels_0" or "consonants_5"
+    if (typeof updateMarathiProgress === 'function') {
+        updateMarathiProgress('level1', 'alphabets', itemId);
+    }
+}
+
+function trackNumberProgress(index) {
+    if (typeof updateMarathiProgress === 'function') {
+        updateMarathiProgress('level1', 'numbers', index);
+    }
+}
+
+
+function updateProgressIndicator() {
+  // This function requires the progress object. Ensure it's initialized first.
+  if (typeof initMarathiProgress !== 'function') return;
+  const progress = JSON.parse(localStorage.getItem('linguaKidsMarathiProgress'));
+  if (!progress) return;
+
+  let totalCompleted = 0;
+  let totalPossible = 0;
+  
+  Object.values(progress).forEach(level => {
+    if (level && typeof level === 'object') {
+      Object.values(level).forEach(category => {
+        if (category && typeof category.completed !== 'undefined') {
+          totalCompleted += category.completed;
+          totalPossible += category.total;
+        }
+      });
+    }
+  });
+  
+  const overallProgress = totalPossible > 0 ? Math.round((totalCompleted / totalPossible) * 100) : 0;
+  
+  const indicator = document.getElementById('progressIndicator');
+  if (indicator) {
+    indicator.textContent = `Progress: ${overallProgress}%`;
+  }
+}
+
+function loadLevel1() {
+  toggleGlobalBack(true);
+  document.getElementById("learning-content").innerHTML = `
+    <h2>Progress Tracking</h2>
+    <div class="sub-container">
+      <div class="sub-card" onclick="window.location.href='mrprogress.html'">
+        <h3>My Progress</h3><p>Track your learning journey</p>
+      </div>
+    </div>
+    <h2>Level 1: अक्षरे आणि अंक</h2>
+    <div class="sub-container">
+      <div class="sub-card" onclick="loadAlphabetsMenu()">
+        <h3>वर्णमाला (Alphabets)</h3><p>Learn A–Z with tracing & sounds</p>
+      </div>
+      <div class="sub-card" onclick="loadNumbersMenu()">
+        <h3>अंक (Numbers)</h3><p>Learn 1–100 with objects & tracing</p>
+      </div>
+    </div>
+    <h2>Level 2: Basic Words</h2>
+    <div class="sub-container">
+      <div class="sub-card" onclick="goToLevel2('fruits')"><h3>फळे</h3><p>Fruits</p></div>
+      <div class="sub-card" onclick="goToLevel2('vegetables')"><h3>भाज्या</h3><p>Vegetables</p></div>
+      <div class="sub-card" onclick="goToLevel2('animals')"><h3>प्राणी</h3><p>Animals</p></div>
+      <div class="sub-card" onclick="goToLevel2('birds')"><h3>पक्षी</h3><p>Birds</p></div>
+      <div class="sub-card" onclick="goToLevel2('vehicles')"><h3>वाहने</h3><p>Vehicles</p></div>
+      <div class="sub-card" onclick="goToLevel2('colors')"><h3>रंग</h3><p>Colors</p></div>
+    </div>
+    <h2>Level 3: Sentences</h2>
+    <div class="sub-container">
+      <div class="sub-card" onclick="goToLevel3('greetings')"><h3>नमस्कार</h3><p>Greetings</p></div>
+      <div class="sub-card" onclick="goToLevel3('activities')"><h3>क्रिया</h3><p>Activities</p></div>
+      <div class="sub-card" onclick="goToLevel3('questions')"><h3>प्रश्न</h3><p>Questions</p></div>
+    </div>
+    <h2>Games</h2>
+    <div class="sub-container">
+      <div class="sub-card" onclick="playGame('fill-blanks')"><h3>Fill in the blanks</h3></div>
+      <div class="sub-card" onclick="playGame('match-words')"><h3>Match words</h3></div>
+      <div class="sub-card" onclick="playGame('count-apples')"><h3>Count the apples</h3></div>
+    </div>
+  `;
+}
+
+function loadAlphabetsMenu() {
+  toggleGlobalBack(false);
+  document.getElementById("learning-content").innerHTML = `
+    <button class="btn back-btn-lesson" onclick="loadLevel1()">Back</button>
+    <div class="tab-container">
+      <button class="tab-btn active" onclick="showTab('vowels', this)">स्वर (Vowels)</button>
+      <button class="tab-btn" onclick="showTab('consonants', this)">व्यंजन (Consonants)</button>
+    </div>
+    <div id="vowels-tab" class="letters-grid">
+      ${VOWELS.map((l, index) => `
+        <div class="letter-card" onclick="startAlphabetLesson(${index}, 'vowels')">
+          <div class="main-char">${l.marathi}</div>
+          <div class="small-char">${l.english}</div>
+          <div class="example">${l.word}</div>
+          <button class="sound-btn" onclick="event.stopPropagation(); speakText('${l.pronunciation}'); trackAlphabetProgress('vowels', ${index});">
+            <i class="fas fa-volume-up"></i>
+          </button>
+        </div>`).join("")}
+    </div>
+    <div id="consonants-tab" class="letters-grid" style="display:none;">
+      ${CONSONANTS.map((l, index) => `
+        <div class="letter-card" onclick="startAlphabetLesson(${index}, 'consonants')">
+          <div class="main-char">${l.marathi}</div>
+          <div class="small-char">${l.english}</div>
+          <div class="example">${l.word}</div>
+          <button class="sound-btn" onclick="event.stopPropagation(); speakText('${l.pronunciation}'); trackAlphabetProgress('consonants', ${index});">
+            <i class="fas fa-volume-up"></i>
+          </button>
+        </div>`).join("")}
+    </div>
+  `;
+}
+
+function showTab(tabName, element) {
+  document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+  element.classList.add('active');
+  document.getElementById('vowels-tab').style.display = tabName === 'vowels' ? 'grid' : 'none';
+  document.getElementById('consonants-tab').style.display = tabName === 'consonants' ? 'grid' : 'none';
+}
+
+function startAlphabetLesson(index, type = 'vowels') {
+  toggleGlobalBack(false);
+  const letters = type === 'vowels' ? VOWELS : CONSONANTS;
+  if (index < 0 || index >= letters.length) { loadAlphabetsMenu(); return; }
+  
+  const l = letters[index];
+  trackAlphabetProgress(type, index); // Track progress when a lesson is started
+
+  document.getElementById("learning-content").innerHTML = `
+    <button class="btn back-btn-lesson" onclick="loadAlphabetsMenu()">Back</button>
+    <div class="lesson-container">
+      <div class="main-char">${l.marathi}</div>
+      <div class="example">${l.word}</div>
+      <button class="sound-btn" onclick="speakText('${l.pronunciation}')" style="margin:10px;"><i class="fas fa-volume-up"></i></button>
+      <div class="trace-area"><canvas id="traceCanvas" width="250" height="250"></canvas><button class="btn clear-btn" onclick="clearCanvas()">Clear</button></div>
+      <div class="lesson-controls">
+        <button class="btn" onclick="startAlphabetLesson(${index - 1}, '${type}')">Previous</button>
+        <button class="btn" onclick="startAlphabetLesson(${index + 1}, '${type}')">Next</button>
+      </div>
+    </div>`;
+  initCanvas();
+}
+
+function loadNumbersMenu() {
+  toggleGlobalBack(false);
+  document.getElementById("learning-content").innerHTML = `
+    <button class="btn back-btn-lesson" onclick="loadLevel1()">Back</button>
+    <div class="numbers-grid-100" id="numbers-grid-100"></div>
+    <div class="pagination" id="numbers-pagination"></div>
+  `;
+  showNumbersPage(0);
+}
+
+function showNumbersPage(page) {
+  const itemsPerPage = 20;
+  const startIndex = page * itemsPerPage;
+  const endIndex = Math.min(startIndex + itemsPerPage, NUMBERS_1_TO_100.length);
+  const totalPages = Math.ceil(NUMBERS_1_TO_100.length / itemsPerPage);
+  
+  let paginationHtml = '';
+  for (let i = 0; i < totalPages; i++) {
+    paginationHtml += `<button class="pagination-btn ${i === page ? 'active' : ''}" onclick="showNumbersPage(${i})">${i * itemsPerPage + 1}-${Math.min((i + 1) * itemsPerPage, 100)}</button>`;
+  }
+  document.getElementById('numbers-pagination').innerHTML = paginationHtml;
+  
+  let numbersHtml = '';
+  for (let i = startIndex; i < endIndex; i++) {
+    const n = NUMBERS_1_TO_100[i];
+    numbersHtml += `
+      <div class="number-card-100" onclick="trackNumberProgress(${i})">
+        <div class="main-char">${n.marathi}</div>
+        <div class="small-char">${n.english}</div>
+        <button class="sound-btn" onclick="event.stopPropagation(); speakText('${n.english}'); trackNumberProgress(${i});">
+          <i class="fas fa-volume-up"></i>
+        </button>
+      </div>`;
+  }
+  document.getElementById('numbers-grid-100').innerHTML = numbersHtml;
+}
+
+function initCanvas() {
+    const canvas = document.getElementById("traceCanvas");
+    const ctx = canvas.getContext("2d");
+    ctx.lineWidth = 4; ctx.lineCap = "round"; ctx.strokeStyle = "#58cc02";
+    let drawing = false;
+
+    function getPos(e) {
+        const rect = canvas.getBoundingClientRect();
+        const touch = e.touches ? e.touches[0] : e;
+        return { x: touch.clientX - rect.left, y: touch.clientY - rect.top };
+    }
+
+    function startDrawing(e) { drawing = true; }
+    function stopDrawing() { drawing = false; ctx.beginPath(); }
+    function draw(e) {
+        if (!drawing) return;
+        e.preventDefault();
+        const p = getPos(e);
+        ctx.lineTo(p.x, p.y);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(p.x, p.y);
+    }
+    
+    canvas.addEventListener("mousedown", startDrawing);
+    canvas.addEventListener("mouseup", stopDrawing);
+    canvas.addEventListener("mousemove", draw);
+    canvas.addEventListener("touchstart", startDrawing);
+    canvas.addEventListener("touchend", stopDrawing);
+    canvas.addEventListener("touchmove", draw);
+}
+
+function clearCanvas() {
+  const canvas = document.getElementById("traceCanvas");
+  if (canvas) {
+    const ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }
+}
+
+function toggleGlobalBack(show) {
+  document.getElementById("globalBack").style.display = show ? "inline-block" : "none";
+}
+
+function goBackHome() {
+  window.location.href = "welcome.html";
+}
+
+function goToLevel2(category) {
+  window.location.href = "mrlevel2.html?category=" + category;
+}
+
+function goToLevel3(category) {
+  window.location.href = "mrlevel3.html?category=" + category;
+}
+
+function playGame(gameType) {
+  window.location.href = "mrgames.html?game=" + gameType;
+}
+
+// ===== INITIALIZATION =====
+document.addEventListener('DOMContentLoaded', function() {
+  if (typeof initMarathiProgress === 'function') {
+    initMarathiProgress(); // Initialize or load progress data
+    updateProgressIndicator(); // Update the UI with the latest progress
+  }
+  loadLevel1(); // Load the main menu
+});
+
+</script>
+
+<script src="mrprogress.js"></script>
+<script src="script.js"></script>
+
+</body>
+</html>
